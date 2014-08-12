@@ -11,4 +11,5 @@ type Server interface {
 	NotFound(context *Context) ([]byte, error)
 
 	Extract(context *Context, e *content.Extract) ([]byte, error)
+	Flavor(context *Context, e *content.Extract, f *content.Flavor) ([]byte, error)
 }

@@ -3,6 +3,7 @@
 package rpc
 
 import (
+	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/rpc"
 )
@@ -19,13 +20,9 @@ func NewFrontendServer(s frontend.Server, addr string) *rpc.Server {
 	return rpc.NewServer("FrontendServer", &FrontendServer{s}, addr)
 }
 
-func (s *FrontendServer) Home(context *frontend.Context, r *[]byte) error {
-	bytes, err := s.s.Home(context)
-	if err != nil {
-		return err
-	}
-	*r = bytes
-	return nil
+func (s *FrontendServer) Home(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.Home(context)
+	return
 }
 
 func (s *FrontendServer) NotFound(context *frontend.Context, r *[]byte) (err error) {
@@ -33,7 +30,23 @@ func (s *FrontendServer) NotFound(context *frontend.Context, r *[]byte) (err err
 	return
 }
 
+type ContextExtract struct {
+	Context *frontend.Context
+	Extract *content.Extract
+}
+
 func (s *FrontendServer) Extract(ce *ContextExtract, r *[]byte) (err error) {
 	*r, err = s.s.Extract(ce.Context, ce.Extract)
+	return
+}
+
+type ContextFlavor struct {
+	Context *frontend.Context
+	Extract *content.Extract
+	Flavor  *content.Flavor
+}
+
+func (s *FrontendServer) Flavor(cf *ContextFlavor, r *[]byte) (err error) {
+	*r, err = s.s.Flavor(cf.Context, cf.Extract, cf.Flavor)
 	return
 }
