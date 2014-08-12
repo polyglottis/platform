@@ -1,42 +1,56 @@
 package config
 
 import (
+	"encoding/json"
+	"flag"
+	"io/ioutil"
 	"log"
 	"path/filepath"
-	"strings"
 )
 
-func init() {
-	log.SetFlags(log.Lshortfile | log.Ltime)
-	log.Println("Executing main configuration")
-	defer log.Println("Main configuration executed")
+var path = flag.String("config", "config.json", "Path to configuration file")
 
-	basePath, err := getBasePath()
+var config = new(Config)
+
+func init() {
+	flag.Parse()
+
+	f, err := ioutil.ReadFile(*path)
 	if err != nil {
-		log.Fatalln(err)
+		if abs, err := filepath.Abs(*path); err == nil {
+			log.Printf("Unable to read config file [%s]: %v", abs, err)
+		} else {
+			log.Printf("Unable to read config file: %v", err)
+		}
 	}
 
-	Default = &Config{
-		basePath: basePath,
+	err = json.Unmarshal(f, config)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
-func getBasePath() (string, error) {
-	abs, err := filepath.Abs(".")
-	if err != nil {
-		return "", err
-	}
-
-	// TODO this is clearly not great :(
-	return strings.SplitAfter(abs, "polyglottis")[0] + "/", nil
+func Get() *Config {
+	return config
 }
 
 type Config struct {
-	basePath string
-}
+	// Databases
+	ContentDB  string // path to content database
+	LanguageDB string // path to language database
+	UserDB     string // path to user database
 
-var Default *Config
+	// Web
+	HttpServer   string // main http server
+	TemplateRoot string // path to templates files
+	StaticDir    string // optional: if present, the server also serves static files from there
 
-func (c *Config) TemplatePath() string {
-	return c.basePath + "html/templates/"
+	// Optional, only for distributed version over rpc:
+	Frontend   string // frontend server
+	Content    string // content server
+	User       string // user server
+	Language   string // language server
+	ContentOp  string // content operations server
+	UserOp     string // user operations server
+	LanguageOp string // language operations server
 }

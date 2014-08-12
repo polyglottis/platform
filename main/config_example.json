@@ -1,0 +1,16 @@
+{
+	"ContentDB": "content.db",
+	"LanguageDB": "language.db",
+	"UserDB": "user.db",
+	
+	"HttpServer": ":8080",
+
+	"Frontend": ":18658",
+	"Content":  ":18982",
+	"Language": ":14342",
+	"User":     ":14773",
+	
+	"ContentOp":  ":16485",
+	"LanguageOp": ":16653",
+	"UserOp":     ":17492"
+}
