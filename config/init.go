@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var path = flag.String("config", "config.json", "Path to configuration file")
+var path = flag.String("c", "config.json", "Path to configuration file")
 
 var config = new(Config)
 
@@ -26,7 +26,7 @@ func init() {
 
 	err = json.Unmarshal(f, config)
 	if err != nil {
-		log.Println(err)
+		log.Fatalln("Error parsing config file:", err)
 	}
 }
 

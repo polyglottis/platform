@@ -8,6 +8,7 @@ import (
 
 	"github.com/polyglottis/platform/api"
 	"github.com/polyglottis/platform/backend"
+	"github.com/polyglottis/platform/config"
 	"github.com/polyglottis/platform/frontend"
 )
 
@@ -22,6 +23,10 @@ func Launch(addr string, c *Configuration) error {
 	server := NewServer(addr)
 	api.NewServer(engine).RegisterServices(server.Subrouter("/api"))
 	frontend.NewWorker(engine, c.Frontend).RegisterRoutes(server.Router)
+	staticDir := config.Get().StaticDir
+	if len(staticDir) != 0 {
+		server.RegisterStatic(staticDir)
+	}
 	return server.ListenAndServe()
 }
 
@@ -47,4 +52,11 @@ func (s *MainServer) Subrouter(pathPrefix string) *mux.Router {
 
 func (s *MainServer) ListenAndServe() error {
 	return s.http.ListenAndServe()
+}
+
+func (s *MainServer) RegisterStatic(path string) {
+	handler := http.StripPrefix("/static/", http.FileServer(http.Dir(path)))
+	s.Router.PathPrefix("/static/css/").Handler(handler)
+	s.Router.PathPrefix("/static/img/").Handler(handler)
+	s.Router.PathPrefix("/static/js/").Handler(handler)
 }
