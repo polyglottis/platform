@@ -4,6 +4,7 @@ package content
 
 import (
 	"errors"
+	"regexp"
 	"time"
 
 	"github.com/polyglottis/platform/language"
@@ -147,6 +148,15 @@ type Extract struct {
 	Flavors  FlavorMap `json:",omitempty"`
 }
 
+var validSlug = regexp.MustCompile(`^[A-Za-z0-9_]*$`)
+
+func ValidSlug(slug string) bool {
+	if len(slug) < 5 {
+		return false
+	}
+	return validSlug.MatchString(slug)
+}
+
 type FlavorMap map[language.Code]FlavorByType
 type FlavorByType map[FlavorType][]*Flavor
 
@@ -199,3 +209,5 @@ type Note struct {
 	Language language.Code
 	Content  string
 }
+
+type ExtractShape []int

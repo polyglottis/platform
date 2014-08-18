@@ -4,7 +4,7 @@ import (
 	"log"
 
 	contentServer "github.com/polyglottis/content_server/server"
-	"github.com/polyglottis/frontend_server"
+	"github.com/polyglottis/frontend_server/register"
 	languageServer "github.com/polyglottis/language_server/server"
 	"github.com/polyglottis/platform"
 	"github.com/polyglottis/platform/backend"
@@ -30,7 +30,7 @@ func main() {
 	log.Println("Launching Polyglottis...")
 
 	log.Fatal(platform.Launch(c.HttpServer, &platform.Configuration{
-		Frontend: frontend_server.New(),
+		Frontend: register.NewServer(),
 
 		Backend: &backend.Configuration{
 			Content:  content,

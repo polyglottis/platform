@@ -64,8 +64,14 @@ func (t *Tester) All() {
 	t.ExtractList(nil)
 
 	log.Print("New extract")
-	t.New(Author, Extract)
+	t.NewExtract(Author, Extract)
 	id := Extract.Id
+
+	log.Println("Test new extract failures")
+	t.NewExtractFails(Author, &content.Extract{Type: content.Poem})                                   // missing slug
+	t.NewExtractFails(Author, &content.Extract{Type: content.Poem, UrlSlug: "test"})                  // slug too short
+	t.NewExtractFails(Author, &content.Extract{Type: content.Poem, UrlSlug: "test*"})                 // invalid characters
+	t.NewExtractFails(Author, &content.Extract{Type: content.ExtractType("test"), UrlSlug: "testok"}) // invalid type
 
 	log.Println("Assert extract list contains one element")
 	t.ExtractList([]*content.Extract{{
@@ -176,7 +182,7 @@ func (t *Tester) NotExist(id content.ExtractId) {
 	}
 }
 
-func (t *Tester) New(author user.Name, e *content.Extract) {
+func (t *Tester) NewExtract(author user.Name, e *content.Extract) {
 	oldId := e.Id
 	err := t.basic.NewExtract(author, e)
 	if err != nil {
@@ -215,6 +221,13 @@ func (t *Tester) New(author user.Name, e *content.Extract) {
 				}
 			}
 		}
+	}
+}
+
+func (t *Tester) NewExtractFails(author user.Name, e *content.Extract) {
+	err := t.basic.NewExtract(author, e)
+	if err == nil {
+		t.Errorf("NewExtract should fail for %v", e)
 	}
 }
 
@@ -262,7 +275,7 @@ func (t *Tester) ExtractList(expected []*content.Extract) {
 		t.Fatal(err)
 	}
 	if len(expected) != len(list) {
-		t.Fatal("Expected list of length %d but got %d.", len(expected), len(list))
+		t.Fatalf("Expected list of length %d but got %d.", len(expected), len(list))
 	}
 	for i, e := range expected {
 		other := list[i]

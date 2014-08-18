@@ -40,14 +40,25 @@ func (s *FrontendServer) Extract(ce *ContextExtract, r *[]byte) (err error) {
 	return
 }
 
-type ContextFlavor struct {
+type ContextFlavorTriples struct {
 	Context *frontend.Context
 	Extract *content.Extract
-	A       *FlavorTriple
-	B       *FlavorTriple
+	A       *frontend.FlavorTriple
+	B       *frontend.FlavorTriple
+}
+type ContextFlavors struct {
+	Context *frontend.Context
+	Extract *content.Extract
+	A       *content.Flavor
+	B       *content.Flavor
 }
 
-func (s *FrontendServer) Flavor(cf *ContextFlavors, r *[]byte) (err error) {
+func (s *FrontendServer) Flavor(cf *ContextFlavorTriples, r *[]byte) (err error) {
 	*r, err = s.s.Flavor(cf.Context, cf.Extract, cf.A, cf.B)
+	return
+}
+
+func (s *FrontendServer) EditText(cf *ContextFlavors, r *[]byte) (err error) {
+	*r, err = s.s.EditText(cf.Context, cf.Extract, cf.A, cf.B)
 	return
 }

@@ -19,6 +19,10 @@ type server struct {
 }
 
 func (s *server) NewExtract(author user.Name, e *content.Extract) error {
+	if !content.ValidSlug(e.UrlSlug) || !content.ValidExtractType(e.Type) {
+		return content.ErrInvalidInput
+	}
+
 	strId, err := rand.Id(5)
 	if err != nil {
 		return err
