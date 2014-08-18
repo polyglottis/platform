@@ -53,12 +53,34 @@ const (
 	ShortStory ExtractType = "short_story"
 	Poem       ExtractType = "poem"
 	Song       ExtractType = "song"
+	WordList   ExtractType = "word_list"
 )
 
+func ValidExtractType(t ExtractType) bool {
+	for _, candidate := range []ExtractType{
+		Article,
+		Dialog,
+		ShortStory,
+		Poem,
+		Song,
+		WordList,
+	} {
+		if t == candidate {
+			return true
+		}
+	}
+	return false
+}
+
 const (
-	Text  FlavorType = "TEXT"
-	Audio FlavorType = "AUDIO"
+	Audio      FlavorType = "AUDIO"
+	Text       FlavorType = "TEXT"
+	Transcript FlavorType = "TRANSCRIPT"
 )
+
+func ValidFlavorType(t FlavorType) bool {
+	return t == Audio || t == Text || t == Transcript
+}
 
 const (
 	TypeText ContentType = "text"
@@ -92,6 +114,8 @@ type Metadata struct {
 type Unit struct {
 	ExtractId   ExtractId
 	FlavorId    FlavorId
+	Language    language.Code
+	FlavorType  FlavorType
 	BlockId     BlockId
 	Id          UnitId
 	ContentType ContentType // text, table header, table row, file, ...
@@ -120,8 +144,11 @@ type Extract struct {
 	Type     ExtractType
 	UrlSlug  string
 	Metadata *Metadata `json:",omitempty"`
-	Flavors  []*Flavor `json:",omitempty"`
+	Flavors  FlavorMap `json:",omitempty"`
 }
+
+type FlavorMap map[language.Code]FlavorByType
+type FlavorByType map[FlavorType][]*Flavor
 
 type VersionedUnit struct {
 	*Unit

@@ -43,10 +43,11 @@ func (s *FrontendServer) Extract(ce *ContextExtract, r *[]byte) (err error) {
 type ContextFlavor struct {
 	Context *frontend.Context
 	Extract *content.Extract
-	Flavor  *content.Flavor
+	A       *FlavorTriple
+	B       *FlavorTriple
 }
 
-func (s *FrontendServer) Flavor(cf *ContextFlavor, r *[]byte) (err error) {
-	*r, err = s.s.Flavor(cf.Context, cf.Extract, cf.Flavor)
+func (s *FrontendServer) Flavor(cf *ContextFlavors, r *[]byte) (err error) {
+	*r, err = s.s.Flavor(cf.Context, cf.Extract, cf.A, cf.B)
 	return
 }

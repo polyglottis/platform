@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -25,7 +24,7 @@ func NewWorker(engine *backend.Engine, frontendServer Server) *Worker {
 
 func (w *Worker) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/extract/{slug}", w.contextHandler(w.Extract))
-	r.HandleFunc("/extract/{slug}/{flavor}", w.contextHandler(w.Flavor))
+	r.HandleFunc("/extract/{slug}/{language}", w.contextHandler(w.Flavor))
 
 	r.HandleFunc("/", w.contextHandler(w.Server.Home))
 	r.NotFoundHandler = http.HandlerFunc(w.contextHandlerCode(http.StatusNotFound, w.Server.NotFound))
@@ -84,7 +83,7 @@ func (w *Worker) extract(context *Context, id content.ExtractId) ([]byte, error)
 
 func (w *Worker) Flavor(context *Context) ([]byte, error) {
 	slug := context.Vars["slug"]
-	flavor := context.Vars["flavor"]
+	lang := context.Vars["language"]
 	if len(slug) == 0 {
 		return nil, content.ErrNotFound
 	}
@@ -94,22 +93,29 @@ func (w *Worker) Flavor(context *Context) ([]byte, error) {
 		return nil, err
 	}
 
-	flavorIdInt, err := strconv.Atoi(flavor)
+	langCode, err := w.Language.GetCode(lang)
 	if err != nil {
-		// error parsing flavor, fall back to extract
+		// language not found, fall back to extract
 		return w.extract(context, id)
 	}
-	flavorId := content.FlavorId(flavorIdInt)
 
 	extract, err := w.Content.GetExtract(id)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, f := range extract.Flavors {
-		if f.Id == flavorId {
-			return w.Server.Flavor(context, extract, f)
+	if fByType, ok := extract.Flavors[langCode]; ok {
+		a := &FlavorTriple{}
+		if audio, ok := fByType[content.Audio]; ok {
+			a.Audio = audio[0]
 		}
+		if text, ok := fByType[content.Text]; ok {
+			a.Text = text[0]
+		}
+		if transcript, ok := fByType[content.Transcript]; ok {
+			a.Transcript = transcript[0]
+		}
+		return w.Server.Flavor(context, extract, a, &FlavorTriple{})
 	}
 	// flavor not found, fall back to extract
 	return w.Server.Extract(context, extract)

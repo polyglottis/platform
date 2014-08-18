@@ -32,18 +32,27 @@ func (s *server) NewExtract(author user.Name, e *content.Extract) error {
 
 	s.extracts[id] = e
 	e.SetId(id)
+	e.SetFlavorLanguagesAndTypes()
 	return nil
 }
 
 func (s *server) NewFlavor(author user.Name, f *content.Flavor) error {
+	if len(f.Type) == 0 || len(f.Language) == 0 {
+		return content.ErrInvalidInput
+	}
 	if e, ok := s.extracts[f.ExtractId]; ok {
+		if _, ok := e.Flavors[f.Language]; !ok {
+			e.Flavors[f.Language] = make(content.FlavorByType)
+		}
+		fByType := e.Flavors[f.Language]
+		flavors := fByType[f.Type]
 		var max content.FlavorId
-		for _, flav := range e.Flavors {
+		for _, flav := range flavors {
 			if max < flav.Id {
 				max = flav.Id
 			}
 		}
-		e.Flavors = append(e.Flavors, f)
+		fByType[f.Type] = append(flavors, f)
 		f.SetId(max + 1)
 		return nil
 	}
@@ -76,7 +85,8 @@ func (s *server) GetExtractId(slug string) (content.ExtractId, error) {
 
 func (s *server) UpdateExtract(author user.Name, e *content.Extract) error {
 	if _, ok := s.extracts[e.Id]; ok {
-		s.extracts[e.Id] = e
+		s.extracts[e.Id].Type = e.Type
+		s.extracts[e.Id].Metadata = e.Metadata
 		return nil
 	} else {
 		return content.ErrNotFound
@@ -85,11 +95,14 @@ func (s *server) UpdateExtract(author user.Name, e *content.Extract) error {
 
 func (s *server) UpdateFlavor(author user.Name, f *content.Flavor) error {
 	if _, ok := s.extracts[f.ExtractId]; ok {
-		flavors := s.extracts[f.ExtractId].Flavors
-		for i, flav := range flavors {
-			if f.Id == flav.Id {
-				flavors[i] = f
-				return nil
+		if fByType, ok := s.extracts[f.ExtractId].Flavors[f.Language]; ok {
+			if flavors, ok := fByType[f.Type]; ok {
+				for i, flav := range flavors {
+					if f.Id == flav.Id {
+						flavors[i] = f
+						return nil
+					}
+				}
 			}
 		}
 	}
@@ -110,26 +123,32 @@ func (s *server) InsertOrUpdateUnit(author user.Name, u *content.Unit) error {
 	if u.BlockId < 1 || u.Id < 1 || (u.BlockId == 1 && u.Id != 1) {
 		return content.ErrInvalidInput
 	}
+	if len(u.Language) == 0 || len(u.FlavorType) == 0 {
+		return content.ErrInvalidInput
+	}
 	if _, ok := s.extracts[u.ExtractId]; ok {
-		flavors := s.extracts[u.ExtractId].Flavors
-		for _, flav := range flavors {
-			if u.FlavorId == flav.Id {
-				for i, block := range flav.Blocks {
-					if block[0].BlockId == u.BlockId {
-						for j, unit := range block {
-							if unit.Id == u.Id {
-								block[j] = u
+		if fByType, ok := s.extracts[u.ExtractId].Flavors[u.Language]; ok {
+			if flavors, ok := fByType[u.FlavorType]; ok {
+				for _, flav := range flavors {
+					if u.FlavorId == flav.Id {
+						for i, block := range flav.Blocks {
+							if block[0].BlockId == u.BlockId {
+								for j, unit := range block {
+									if unit.Id == u.Id {
+										block[j] = u
+										return nil
+									}
+								}
+								flav.Blocks[i] = append(flav.Blocks[i], u)
+								sort.Sort(content.UnitSlice(flav.Blocks[i]))
 								return nil
 							}
 						}
-						flav.Blocks[i] = append(flav.Blocks[i], u)
-						sort.Sort(content.UnitSlice(flav.Blocks[i]))
+						flav.Blocks = append(flav.Blocks, []*content.Unit{u})
+						sort.Sort(content.BlockSlice(flav.Blocks))
 						return nil
 					}
 				}
-				flav.Blocks = append(flav.Blocks, []*content.Unit{u})
-				sort.Sort(content.BlockSlice(flav.Blocks))
-				return nil
 			}
 		}
 	}

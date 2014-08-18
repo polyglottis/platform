@@ -51,12 +51,36 @@ func (e *Extract) Equals(f *Extract) bool {
 		e.Type != f.Type ||
 		e.UrlSlug != f.UrlSlug ||
 		!e.Metadata.Equals(f.Metadata) ||
-		len(e.Flavors) != len(f.Flavors) {
+		!e.Flavors.Equals(f.Flavors) {
 		return false
 	}
+	return true
+}
 
-	for i, flavor := range e.Flavors {
-		if !flavor.Equals(f.Flavors[i]) {
+func (m FlavorMap) Equals(n FlavorMap) bool {
+	if len(m) != len(n) {
+		return false
+	}
+	for lang, mT := range m {
+		if nT, ok := n[lang]; ok {
+			if len(mT) != len(nT) {
+				return false
+			}
+			for flavorType, f := range nT {
+				if g, ok := nT[flavorType]; ok {
+					if len(f) != len(g) {
+						return false
+					}
+					for i, ff := range f {
+						if !ff.Equals(g[i]) {
+							return false
+						}
+					}
+				} else {
+					return false
+				}
+			}
+		} else {
 			return false
 		}
 	}

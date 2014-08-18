@@ -11,5 +11,11 @@ type Server interface {
 	NotFound(context *Context) ([]byte, error)
 
 	Extract(context *Context, e *content.Extract) ([]byte, error)
-	Flavor(context *Context, e *content.Extract, f *content.Flavor) ([]byte, error)
+	Flavor(context *Context, e *content.Extract, a, b *FlavorTriple) ([]byte, error)
+}
+
+type FlavorTriple struct {
+	Audio      *content.Flavor
+	Text       *content.Flavor
+	Transcript *content.Flavor
 }

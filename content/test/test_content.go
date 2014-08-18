@@ -16,25 +16,27 @@ var Extract = &content.Extract{
 	Metadata: &content.Metadata{
 		TargetLanguage: language.English.Code,
 	},
-	Flavors: []*content.Flavor{{
-		Id:       1,
-		Summary:  "Test flavor",
-		Type:     content.Text,
-		Language: language.English.Code,
-		Blocks: content.BlockSlice{{{
-			FlavorId:    1,
-			BlockId:     1,
-			Id:          1,
-			ContentType: content.TypeText,
-			Content:     "Title",
-		}}, {{
-			FlavorId:    1,
-			BlockId:     2,
-			Id:          1,
-			ContentType: content.TypeText,
-			Content:     "First line",
-		}}},
-	}},
+	Flavors: content.FlavorMap{
+		language.English.Code: content.FlavorByType{
+			content.Text: []*content.Flavor{{
+				Id:      1,
+				Summary: "Test flavor",
+				Blocks: content.BlockSlice{{{
+					FlavorId:    1,
+					BlockId:     1,
+					Id:          1,
+					ContentType: content.TypeText,
+					Content:     "Title",
+				}}, {{
+					FlavorId:    1,
+					BlockId:     2,
+					Id:          1,
+					ContentType: content.TypeText,
+					Content:     "First line",
+				}}},
+			}},
+		},
+	},
 }
 
 type Tester struct {
@@ -84,28 +86,32 @@ func (t *Tester) All() {
 	log.Print("New flavor")
 	secondFlavor := &content.Flavor{
 		ExtractId: Extract.Id,
+		Type:      content.Audio,
+		Language:  language.English.Code,
 		Summary:   "Second flavor",
 	}
 	t.NewFlavor(Author, secondFlavor)
-	Extract.Flavors = append(Extract.Flavors, secondFlavor)
+	Extract.Flavors[language.English.Code][content.Audio] = []*content.Flavor{secondFlavor}
 	t.Get(Extract.Id, Extract)
 
 	log.Print("Assert new flavor fails")
-	t.NewFlavorFails(Author, &content.Flavor{})
+	t.NewFlavorFails(Author, &content.Flavor{ExtractId: Extract.Id, Language: language.English.Code})
+	t.NewFlavorFails(Author, &content.Flavor{Language: language.English.Code, Type: content.Audio})
+	t.NewFlavorFails(Author, &content.Flavor{ExtractId: Extract.Id, Type: content.Audio})
 
 	log.Print("Update extract")
 	Extract.Type = content.Article
 	Extract.Metadata.Previous = "aaa"
 	Extract.Metadata.TargetLanguage = ""
+	slug := Extract.UrlSlug
 	Extract.UrlSlug = "updated_slug"
 	t.Update(Author, Extract)
+	Extract.UrlSlug = slug // slug should not change
 	t.Get(id, Extract)
 
 	log.Print("Udpate flavor")
-	f := Extract.Flavors[0]
+	f := Extract.Flavors[language.English.Code][content.Text][0]
 	f.Summary = "This is a more elaborate test summary."
-	f.Type = content.Audio
-	f.Language = language.Unknown.Code
 	f.LanguageComment = "Colloquial"
 	t.UpdateFlavor(Author, f)
 	t.Get(id, Extract)
@@ -113,36 +119,40 @@ func (t *Tester) All() {
 	log.Print("Insert unit")
 	thirdUnit := &content.Unit{
 		ExtractId:   id,
+		Language:    language.English.Code,
+		FlavorType:  content.Text,
 		FlavorId:    1,
 		BlockId:     2,
 		Id:          3,
 		ContentType: content.TypeText,
 		Content:     "Third line.",
 	}
-	blocks := Extract.Flavors[0].Blocks
+	blocks := Extract.Flavors[language.English.Code][content.Text][0].Blocks
 	blocks[1] = append(blocks[1], thirdUnit)
 	t.InsertOrUpdateUnits(Author, []*content.Unit{thirdUnit})
 	t.Get(id, Extract)
 
 	log.Print("Update unit")
-	u := Extract.Flavors[0].Blocks[1][0]
+	u := Extract.Flavors[language.English.Code][content.Text][0].Blocks[1][0]
 	u.Content = "First line of text body."
 	u.ContentType = content.TypeFile
 	t.InsertOrUpdateUnits(Author, []*content.Unit{u})
 	t.Get(id, Extract)
 
 	log.Print("Insert and update units")
-	title := Extract.Flavors[0].Blocks[0][0]
+	title := Extract.Flavors[language.English.Code][content.Text][0].Blocks[0][0]
 	title.Content = "This is the title."
 	secondUnit := &content.Unit{
 		ExtractId:   id,
 		FlavorId:    1,
+		Language:    language.English.Code,
+		FlavorType:  content.Text,
 		BlockId:     2,
 		Id:          2,
 		ContentType: content.TypeText,
 		Content:     "Second line.",
 	}
-	blocks = Extract.Flavors[0].Blocks
+	blocks = Extract.Flavors[language.English.Code][content.Text][0].Blocks
 	blocks[1] = []*content.Unit{blocks[1][0], secondUnit, blocks[1][1]}
 	t.InsertOrUpdateUnits(Author, []*content.Unit{secondUnit, title})
 	t.Get(id, Extract)
@@ -178,14 +188,30 @@ func (t *Tester) New(author user.Name, e *content.Extract) {
 	if e.Id == oldId {
 		t.Fatalf("Extract id should have been set (%v vs %v)", e.Id, oldId)
 	}
-	for _, f := range e.Flavors {
-		if f.ExtractId != e.Id {
-			t.Fatal("Extract id should have been set on flavor.")
-		}
-		for _, block := range f.Blocks {
-			for _, unit := range block {
-				if unit.ExtractId != e.Id {
-					t.Fatal("Extract id should have been set on unit.")
+	for lang, fByType := range e.Flavors {
+		for fType, flavors := range fByType {
+			for _, f := range flavors {
+				if f.ExtractId != e.Id {
+					t.Fatal("Extract id should have been set on flavor.")
+				}
+				if f.Language != lang {
+					t.Error("Flavor language should match map key.")
+				}
+				if f.Type != fType {
+					t.Error("Flavor type should match map key.")
+				}
+				for _, block := range f.Blocks {
+					for _, unit := range block {
+						if unit.ExtractId != e.Id {
+							t.Fatal("Extract id should have been set on unit.")
+						}
+						if unit.Language != lang {
+							t.Error("Unit language should have been set.")
+						}
+						if unit.FlavorType != fType {
+							t.Error("FlavorType should have been set on unit.")
+						}
+					}
 				}
 			}
 		}

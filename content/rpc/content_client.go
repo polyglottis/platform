@@ -1,8 +1,6 @@
 package rpc
 
 import (
-	"log"
-
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rpc"
@@ -21,7 +19,6 @@ func NewClient(addr string) (*Client, error) {
 }
 
 func (c *Client) NewExtract(author user.Name, e *content.Extract) error {
-	log.Printf("Saving %s's extract: %+v", author, e)
 	var id content.ExtractId
 	err := c.rpc.Call("ContentServer.NewExtract", &ExtractRequest{
 		Author:  author,
@@ -32,11 +29,11 @@ func (c *Client) NewExtract(author user.Name, e *content.Extract) error {
 	}
 
 	e.SetId(id)
+	e.SetFlavorLanguagesAndTypes()
 	return nil
 }
 
 func (c *Client) NewFlavor(author user.Name, f *content.Flavor) error {
-	log.Printf("Saving %s's flavor: %+v", author, f)
 	var id content.FlavorId
 	err := c.rpc.Call("ContentServer.NewFlavor", &FlavorRequest{
 		Author: author,
@@ -47,6 +44,8 @@ func (c *Client) NewFlavor(author user.Name, f *content.Flavor) error {
 	}
 
 	f.SetId(id)
+	f.SetLanguage(f.Language)
+	f.SetType(f.Type)
 	return nil
 }
 
