@@ -4,7 +4,6 @@ import (
 	"github.com/polyglottis/platform/content"
 )
 
-
 func (w *Worker) Extract(context *Context) ([]byte, error) {
 	slug := context.Vars["slug"]
 	if len(slug) == 0 {

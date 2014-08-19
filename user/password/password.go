@@ -3,7 +3,7 @@ package password
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	
+
 	"github.com/polyglottis/platform/user"
 )
 

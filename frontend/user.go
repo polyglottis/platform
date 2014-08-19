@@ -1,14 +1,14 @@
 package frontend
 
 import (
-	"time"
 	"crypto/rand"
-	mathRand "math/rand"
 	"math/big"
+	mathRand "math/rand"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gorilla/schema"
 
@@ -40,7 +40,7 @@ func (w *Worker) SignUp(context *Context, session *Session) ([]byte, error) {
 	args.CleanUp()
 
 	errors := make(map[string]i18n.Key)
-	
+
 	if valid, msg := user.ValidName(args.User); valid {
 		_, err = w.User.GetAccount(user.Name(args.User))
 		if err != nil && err != user.AccountNotFound {
@@ -87,15 +87,13 @@ func (w *Worker) SignUp(context *Context, session *Session) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	session.SetAccount(a)
 	err = session.Save()
 	if err != nil {
 		return nil, err
 	}
-	
 
-	// TODO redirect to welcome page
 	return nil, redirectTo("/", http.StatusSeeOther)
 }
 
@@ -106,7 +104,7 @@ func validEmail(email string) bool {
 }
 
 type SignInArgs struct {
-	User string
+	User     string
 	Password string
 }
 
@@ -135,13 +133,13 @@ func (w *Worker) SignIn(context *Context, session *Session) ([]byte, error) {
 		sleep()
 		return w.Server.SignIn(context)
 	}
-	
+
 	session.SetAccount(a)
 	err = session.Save()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	returnTo := context.Query.Get("return_to")
 	if len(returnTo) == 0 {
 		returnTo = "/"
@@ -155,8 +153,8 @@ func sleep() {
 	bigInt, err := rand.Int(rand.Reader, big.NewInt(limit))
 	if err == nil {
 		i = bigInt.Int64()
-	}else{
-			i = mathRand.Int63n(limit)
+	} else {
+		i = mathRand.Int63n(limit)
 	}
 	t := 1*time.Second + time.Duration(i)*time.Millisecond
 	time.Sleep(t)
@@ -168,6 +166,6 @@ func (w *Worker) SignOut(context *Context, session *Session) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return nil, redirectTo("/", http.StatusSeeOther)
 }

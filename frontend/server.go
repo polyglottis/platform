@@ -1,8 +1,8 @@
 package frontend
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 
 	"github.com/gorilla/mux"
 
@@ -48,7 +48,7 @@ func (w *Worker) contextHandlerForm(f func(*Context, *Session) ([]byte, error)) 
 }
 
 func (w *Worker) contextHandlerCode(code int, f func(*Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
-	return w.contextHandlerFull(code, func(c *Context, s *Session)([]byte, error) {
+	return w.contextHandlerFull(code, func(c *Context, s *Session) ([]byte, error) {
 		return f(c)
 	}, false)
 }
@@ -81,7 +81,7 @@ func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([
 				if redir, ok := err.(*redirect); ok {
 					http.Redirect(w, r, redir.urlStr, redir.code)
 				} else {
-				server.InternalError(r, w, err)
+					server.InternalError(r, w, err)
 				}
 			}
 		} else {
@@ -92,11 +92,11 @@ func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([
 
 type redirect struct {
 	urlStr string
-	code int
+	code   int
 }
 
 func redirectTo(urlStr string, code int) *redirect {
-	return &redirect{urlStr: urlStr, code:code}
+	return &redirect{urlStr: urlStr, code: code}
 }
 
 // Error is a hack: redirect is an error, thanks to this method

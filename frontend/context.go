@@ -17,7 +17,7 @@ type Context struct {
 	Vars   map[string]string
 	Query  url.Values
 	Form   url.Values
-	Url string
+	Url    string
 	User   user.Name
 
 	Defaults url.Values          // default form values
@@ -33,13 +33,13 @@ func ReadContext(r *http.Request, s *Session) (*Context, error) {
 		Locale: language.English.Code,
 		Vars:   mux.Vars(r),
 		Query:  r.URL.Query(),
-		Url: r.URL.String(),
+		Url:    r.URL.String(),
 	}
-	
-	if u :=  s.GetAccount(); u != nil {
-			c.User = u.Name
-			}
-	
+
+	if u := s.GetAccount(); u != nil {
+		c.User = u.Name
+	}
+
 	return c, nil
 }
 

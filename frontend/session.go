@@ -1,17 +1,17 @@
 package frontend
 
 import (
+	"encoding/gob"
 	"log"
 	"net/http"
-	"encoding/gob"
-	
-    "github.com/gorilla/sessions"
-		
-		"github.com/polyglottis/platform/user"
+
+	"github.com/gorilla/sessions"
+
+	"github.com/polyglottis/platform/user"
 )
 
 func init() {
-    gob.Register(&user.Account{})
+	gob.Register(&user.Account{})
 }
 
 var sessionStore = sessions.NewCookieStore([]byte("something-very-secret"))
@@ -42,7 +42,7 @@ func (s *Session) RemoveAccount() {
 }
 
 func (s *Session) Save() error {
-	return s.Session.Save(s.r, s.w)	
+	return s.Session.Save(s.r, s.w)
 }
 
 func readSession(r *http.Request, w http.ResponseWriter) *Session {
@@ -52,7 +52,7 @@ func readSession(r *http.Request, w http.ResponseWriter) *Session {
 	}
 	return &Session{
 		Session: s,
-		r: r,
-		w: w,
+		r:       r,
+		w:       w,
 	}
 }

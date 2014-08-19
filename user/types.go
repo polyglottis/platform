@@ -3,7 +3,7 @@ package user
 
 import (
 	"regexp"
-	
+
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/language"
 )
