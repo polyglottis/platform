@@ -5,6 +5,7 @@
 	
 	"HttpServer": ":8080",
 	"TemplateRoot": "frontend_server",
+	"SessionKeyPath": "session_keys.txt",
 	"StaticDir": "../../../../web",
 
 	"Frontend": ":18658",

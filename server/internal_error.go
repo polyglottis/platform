@@ -12,11 +12,11 @@ func internalError(w http.ResponseWriter) {
 }
 
 func InternalError(r *http.Request, w http.ResponseWriter, err error) {
-	log.Printf("Internal server error: %v (while serving %s)", err, r)
+	log.Printf("Internal server error: %v (while serving %s [%s])", err, r.URL.String(), r.Method)
 	internalError(w)
 }
 
 func Recovered(r *http.Request, w http.ResponseWriter, rec interface{}) {
-	log.Printf("Panic! Recovered from %v while serving %v", rec, r)
+	log.Printf("Panic! Recovered from %v while serving %s [%s]", rec, r.URL.String(), r.Method)
 	internalError(w)
 }

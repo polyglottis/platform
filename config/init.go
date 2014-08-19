@@ -41,9 +41,10 @@ type Config struct {
 	UserDB     string // path to user database
 
 	// Web
-	HttpServer   string // main http server
-	TemplateRoot string // path to templates files
-	StaticDir    string // optional: if present, the server also serves static files from there
+	HttpServer     string // main http server
+	TemplateRoot   string // path to templates files
+	SessionKeyPath string // path to session keys file (the file will be automatically created if not present)
+	StaticDir      string // optional: if present, the server also serves static files from there
 
 	// Optional, only for distributed version over rpc:
 	Frontend   string // frontend server
