@@ -13,12 +13,14 @@ import (
 )
 
 type Context struct {
-	Locale language.Code
-	Vars   map[string]string
-	Query  url.Values
-	Form   url.Values
-	Url    string
-	User   user.Name
+	Locale   language.Code
+	Vars     map[string]string
+	Query    url.Values
+	Form     url.Values
+	Url      string
+	User     user.Name
+	Protocol string
+	Host     string
 
 	Email string // for password reset
 
@@ -36,6 +38,13 @@ func ReadContext(r *http.Request, s *Session) (*Context, error) {
 		Vars:   mux.Vars(r),
 		Query:  r.URL.Query(),
 		Url:    r.URL.String(),
+		Host:   r.Host,
+	}
+
+	if r.TLS == nil {
+		c.Protocol = "http"
+	} else {
+		c.Protocol = "https"
 	}
 
 	if u := s.GetAccount(); u != nil {
@@ -58,4 +67,8 @@ func ReadContextWithForm(r *http.Request, s *Session) (*Context, error) {
 
 	c.Form = r.PostForm
 	return c, nil
+}
+
+func (c *Context) ProtocolAndHost() string {
+	return c.Protocol + "://" + c.Host
 }

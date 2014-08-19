@@ -1,10 +1,10 @@
 package frontend
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/polyglottis/platform/config"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/platform/user/password"
@@ -41,9 +41,16 @@ func (w *Worker) ForgotPassword(context *Context, session *Session) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Token:", token)
 
-	// TODO send email
+	message, err := w.Server.PasswordResetEmail(context, a, token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = config.Get().MailUser.SendMail("support@polyglottis.org", message, args.Email)
+	if err != nil {
+		return nil, err
+	}
 
 	context.Email = args.Email
 	return w.Server.PasswordSent(context)

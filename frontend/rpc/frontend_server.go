@@ -5,6 +5,7 @@ package rpc
 import (
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
+	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rpc"
 )
 
@@ -82,5 +83,16 @@ func (s *FrontendServer) Flavor(cf *ContextFlavorTriples, r *[]byte) (err error)
 
 func (s *FrontendServer) EditText(cf *ContextFlavors, r *[]byte) (err error) {
 	*r, err = s.s.EditText(cf.Context, cf.Extract, cf.A, cf.B)
+	return
+}
+
+type AccountToken struct {
+	Context *frontend.Context
+	Account *user.Account
+	Token   string
+}
+
+func (s *FrontendServer) PasswordResetEmail(a *AccountToken, r *[]byte) (err error) {
+	*r, err = s.s.PasswordResetEmail(a.Context, a.Account, a.Token)
 	return
 }

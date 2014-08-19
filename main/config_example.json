@@ -6,6 +6,7 @@
 	"HttpServer": ":8080",
 	"TemplateRoot": "frontend_server",
 	"SessionKeyPath": "session_keys.txt",
+	"EmailConfigPath": "email_user.json",
 	"StaticDir": "../../../../web",
 
 	"Frontend": ":18658",

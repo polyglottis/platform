@@ -3,6 +3,7 @@ package frontend
 
 import (
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/user"
 )
 
 // Server is the interface a frontend server should comply to.
@@ -20,6 +21,7 @@ type Server interface {
 	ForgotPassword(context *Context) ([]byte, error)
 	PasswordSent(context *Context) ([]byte, error)
 	ResetPassword(context *Context) ([]byte, error)
+	PasswordResetEmail(c *Context, a *user.Account, token string) ([]byte, error)
 }
 
 type FlavorTriple struct {

@@ -3,6 +3,7 @@ package rpc
 import (
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
+	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rpc"
 )
 
@@ -95,4 +96,15 @@ func (c *Client) PasswordSent(context *frontend.Context) ([]byte, error) {
 }
 func (c *Client) ResetPassword(context *frontend.Context) ([]byte, error) {
 	return c.call("ResetPassword", context)
+}
+func (c *Client) PasswordResetEmail(context *frontend.Context, a *user.Account, token string) (b []byte, err error) {
+	err = c.rpc.Call("FrontendServer.PasswordResetEmail", &AccountToken{
+		Context: context,
+		Account: a,
+		Token:   token,
+	}, &b)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
