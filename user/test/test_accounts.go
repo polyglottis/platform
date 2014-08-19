@@ -35,6 +35,13 @@ func (t *Tester) All() {
 	t.Equals(a, Account)
 
 	t.Get(Account.Name, a)
+
+	t.GetByEmail(Account.Email, a)
+
+	t.GetNotFound("other")
+	t.GetByEmailNotFound("other@email.com")
+
+	t.Tokens(Account.Name)
 }
 
 func (t *Tester) NotExist(n user.Name) {
@@ -73,7 +80,64 @@ func (t *Tester) Get(n user.Name, check *user.Account) {
 	if a == nil {
 		t.Fatal("An account should get returned here")
 	}
-	if !check.Equals(a) {
-		t.Errorf("These accounts should coincide: %+v != %+v", a, check)
+	t.Check(check, a)
+}
+
+func (t *Tester) Check(check, other *user.Account) {
+	if !check.Equals(other) {
+		t.Errorf("These accounts should coincide: %+v != %+v", check, other)
+	}
+}
+
+func (t *Tester) GetByEmail(email string, check *user.Account) {
+	a, err := t.server.GetAccountByEmail(email)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a == nil {
+		t.Fatal("An account should get returned here")
+	}
+	t.Check(check, a)
+}
+
+func (t *Tester) GetNotFound(n user.Name) {
+	_, err := t.server.GetAccount(n)
+	if err != user.AccountNotFound {
+		t.Fatal("Account should not be found: %v", n)
+	}
+}
+
+func (t *Tester) GetByEmailNotFound(email string) {
+	_, err := t.server.GetAccountByEmail(email)
+	if err != user.AccountNotFound {
+		t.Fatal("Account should not be found: %s", email)
+	}
+}
+
+func (t *Tester) Tokens(n user.Name) {
+	token, err := t.server.NewToken(n)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	valid, err := t.server.ValidToken(n, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !valid {
+		t.Error("New tokens should always be valid")
+	}
+
+	err = t.server.DeleteToken(n, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	valid, err = t.server.ValidToken(n, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if valid {
+		t.Error("Deleted tokens should not be valid")
 	}
 }

@@ -36,3 +36,24 @@ func (s *UserServer) GetAccount(n user.Name, a *user.Account) error {
 	*a = *acc
 	return nil
 }
+
+func (s *UserServer) GetAccountByEmail(email string, a *user.Account) error {
+	acc, err := s.s.GetAccountByEmail(email)
+	if err != nil {
+		return err
+	}
+	*a = *acc
+	return nil
+}
+
+func (s *UserServer) NewToken(n user.Name, token *string) (err error) {
+	*token, err = s.s.NewToken(n)
+	return
+}
+func (s *UserServer) ValidToken(t *NamedToken, valid *bool) (err error) {
+	*valid, err = s.s.ValidToken(t.Name, t.Token)
+	return
+}
+func (s *UserServer) DeleteToken(t *NamedToken, nothing *bool) (err error) {
+	return s.s.DeleteToken(t.Name, t.Token)
+}

@@ -8,6 +8,11 @@ import (
 type Server interface {
 	NewAccount(r *NewAccountRequest) (*Account, error)
 	GetAccount(n Name) (*Account, error)
+	GetAccountByEmail(email string) (*Account, error)
+
+	NewToken(n Name) (string, error)
+	ValidToken(n Name, token string) (bool, error)
+	DeleteToken(n Name, token string) error
 }
 
 var AccountNotFound = errors.New("Account not found")

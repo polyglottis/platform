@@ -41,3 +41,33 @@ func (c *Client) GetAccount(n user.Name) (*user.Account, error) {
 	}
 	return a, nil
 }
+
+func (c *Client) GetAccountByEmail(email string) (*user.Account, error) {
+	a := new(user.Account)
+	err := c.rpc.Call("UserServer.GetAccountByEmail", email, a)
+	if err != nil {
+		if err.Error() == "Account not found" {
+			return nil, user.AccountNotFound
+		}
+		return nil, err
+	}
+	return a, nil
+}
+
+func (c *Client) NewToken(n user.Name) (token string, err error) {
+	err = c.rpc.Call("UserServer.NewToken", n, &token)
+	return
+}
+
+type NamedToken struct {
+	Name  user.Name
+	Token string
+}
+
+func (c *Client) ValidToken(n user.Name, token string) (valid bool, err error) {
+	err = c.rpc.Call("UserServer.ValidToken", &NamedToken{Name: n, Token: token}, &valid)
+	return
+}
+func (c *Client) DeleteToken(n user.Name, token string) error {
+	return c.rpc.Call("UserServer.DeleteToken", &NamedToken{Name: n, Token: token}, nil)
+}
