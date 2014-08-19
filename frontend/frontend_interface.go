@@ -17,6 +17,9 @@ type Server interface {
 
 	SignUp(context *Context) ([]byte, error)
 	SignIn(context *Context) ([]byte, error)
+	ForgotPassword(context *Context) ([]byte, error)
+	PasswordSent(context *Context) ([]byte, error)
+	ResetPassword(context *Context) ([]byte, error)
 }
 
 type FlavorTriple struct {

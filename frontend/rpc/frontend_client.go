@@ -86,3 +86,13 @@ func (c *Client) SignUp(context *frontend.Context) ([]byte, error) {
 func (c *Client) SignIn(context *frontend.Context) ([]byte, error) {
 	return c.call("SignIn", context)
 }
+
+func (c *Client) ForgotPassword(context *frontend.Context) ([]byte, error) {
+	return c.call("ForgotPassword", context)
+}
+func (c *Client) PasswordSent(context *frontend.Context) ([]byte, error) {
+	return c.call("PasswordSent", context)
+}
+func (c *Client) ResetPassword(context *frontend.Context) ([]byte, error) {
+	return c.call("ResetPassword", context)
+}

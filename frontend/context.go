@@ -20,6 +20,8 @@ type Context struct {
 	Url    string
 	User   user.Name
 
+	Email string // for password reset
+
 	Defaults url.Values          // default form values
 	Errors   map[string]i18n.Key // errors on form submit
 

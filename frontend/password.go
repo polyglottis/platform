@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -25,11 +26,12 @@ func (w *Worker) ForgotPassword(context *Context, session *Session) ([]byte, err
 	}
 	args.CleanUp()
 
-	a, err = w.User.GetAccountByEmail(args.Email)
+	a, err := w.User.GetAccountByEmail(args.Email)
 	if err == user.AccountNotFound {
 		context.Errors = map[string]i18n.Key{
 			"FORM": i18n.Key("Sorry, we could not find this email."),
 		}
+		sleep()
 		return w.Server.ForgotPassword(context)
 	} else if err != nil {
 		return nil, err
@@ -43,7 +45,8 @@ func (w *Worker) ForgotPassword(context *Context, session *Session) ([]byte, err
 
 	// TODO send email
 
-	return nil, redirectTo("/user/password_sent", http.StatusSeeOther)
+	context.Email = args.Email
+	return w.Server.PasswordSent(context)
 }
 
 func (w *Worker) checkToken(context *Context) (bool, error) {
@@ -53,13 +56,13 @@ func (w *Worker) checkToken(context *Context) (bool, error) {
 	return w.User.ValidToken(user.Name(u), token)
 }
 
-func (w *Worker) GetResetPassword(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) GetResetPassword(context *Context) ([]byte, error) {
 	valid, err := w.checkToken(context)
 	if err != nil {
 		return nil, err
 	}
 	if !valid {
-		return w.linkExpired()
+		return w.linkExpired(context)
 	}
 	return w.Server.ResetPassword(context)
 }
@@ -84,14 +87,14 @@ func (w *Worker) ResetPassword(context *Context, session *Session) ([]byte, erro
 	}
 	a, err := w.User.GetAccount(user.Name(context.Vars["user"]))
 	if err != nil && err != user.AccountNotFound {
-		return false, err
+		return nil, err
 	}
 	if err == user.AccountNotFound || !valid {
-		return linkExpired()
+		return w.linkExpired(context)
 	}
 
 	args := new(resetPasswordArgs)
-	err := decoder.Decode(args, context.Form)
+	err = decoder.Decode(args, context.Form)
 	if err != nil {
 		return nil, err
 	}

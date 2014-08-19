@@ -39,6 +39,18 @@ func (s *FrontendServer) SignIn(context *frontend.Context, r *[]byte) (err error
 	*r, err = s.s.SignIn(context)
 	return
 }
+func (s *FrontendServer) ForgotPassword(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.ForgotPassword(context)
+	return
+}
+func (s *FrontendServer) PasswordSent(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.PasswordSent(context)
+	return
+}
+func (s *FrontendServer) ResetPassword(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.ResetPassword(context)
+	return
+}
 
 type ContextExtract struct {
 	Context *frontend.Context
