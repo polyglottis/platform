@@ -9,6 +9,7 @@ type Server interface {
 	NewAccount(r *NewAccountRequest) (*Account, error)
 	GetAccount(n Name) (*Account, error)
 	GetAccountByEmail(email string) (*Account, error)
+	UpdateAccount(a *Account) error
 
 	NewToken(n Name) (string, error)
 	ValidToken(n Name, token string) (bool, error)

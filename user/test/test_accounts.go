@@ -38,6 +38,12 @@ func (t *Tester) All() {
 
 	t.GetByEmail(Account.Email, a)
 
+	a.Email = "newTest@test.com"
+	a.Active = false
+	a.MainLanguage = language.Unknown.Code
+	a.PasswordHash = []byte("updatedPW")
+	t.UpdateAccount(a)
+
 	t.GetNotFound("other")
 	t.GetByEmailNotFound("other@email.com")
 
@@ -112,6 +118,14 @@ func (t *Tester) GetByEmailNotFound(email string) {
 	if err != user.AccountNotFound {
 		t.Fatal("Account should not be found: %s", email)
 	}
+}
+
+func (t *Tester) UpdateAccount(a *user.Account) {
+	err := t.server.UpdateAccount(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Get(a.Name, a)
 }
 
 func (t *Tester) Tokens(n user.Name) {

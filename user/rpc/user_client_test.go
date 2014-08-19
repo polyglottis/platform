@@ -31,7 +31,7 @@ func (s *server) GetAccount(n user.Name) (*user.Account, error) {
 	if a, ok := s.accounts[n]; ok {
 		return a, nil
 	}
-	return nil, fmt.Errorf("Account not found")
+	return nil, user.AccountNotFound
 }
 
 func (s *server) GetAccountByEmail(email string) (*user.Account, error) {
@@ -40,7 +40,14 @@ func (s *server) GetAccountByEmail(email string) (*user.Account, error) {
 			return a, nil
 		}
 	}
-	return nil, fmt.Errorf("Account not found")
+	return nil, user.AccountNotFound
+}
+
+func (s *server) UpdateAccount(a *user.Account) error {
+	if _, ok := s.accounts[a.Name]; ok {
+		s.accounts[a.Name] = a
+	}
+	return nil
 }
 
 func (s *server) NewToken(n user.Name) (string, error) {

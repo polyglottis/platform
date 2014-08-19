@@ -53,6 +53,9 @@ func (c *Client) GetAccountByEmail(email string) (*user.Account, error) {
 	}
 	return a, nil
 }
+func (c *Client) UpdateAccount(a *user.Account) error {
+	return c.rpc.Call("UserServer.UpdateAccount", a, nil)
+}
 
 func (c *Client) NewToken(n user.Name) (token string, err error) {
 	err = c.rpc.Call("UserServer.NewToken", n, &token)

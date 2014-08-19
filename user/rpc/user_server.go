@@ -46,6 +46,10 @@ func (s *UserServer) GetAccountByEmail(email string, a *user.Account) error {
 	return nil
 }
 
+func (s *UserServer) UpdateAccount(a *user.Account, nothing *bool) (err error) {
+	return s.s.UpdateAccount(a)
+}
+
 func (s *UserServer) NewToken(n user.Name, token *string) (err error) {
 	*token, err = s.s.NewToken(n)
 	return
