@@ -68,11 +68,12 @@ func (w *Worker) GetResetPassword(context *Context) ([]byte, error) {
 }
 
 func (w *Worker) linkExpired(context *Context) ([]byte, error) {
+	// TODO this is useless: we need to store the error in the flash messages
 	context.Errors = map[string]i18n.Key{
 		"FORM": i18n.Key("This link has expired. Please enter your email again."),
 	}
 	sleep()
-	return w.Server.ForgotPassword(context)
+	return nil, redirectTo("/user/forgot_password", http.StatusSeeOther)
 }
 
 type resetPasswordArgs struct {
@@ -120,6 +121,11 @@ func (w *Worker) ResetPassword(context *Context, session *Session) ([]byte, erro
 	a.PasswordHash = hash
 
 	err = w.User.UpdateAccount(a)
+	if err != nil {
+		return nil, err
+	}
+
+	err = w.User.DeleteToken(user.Name(context.Vars["user"]), context.Vars["token"])
 	if err != nil {
 		return nil, err
 	}
