@@ -13,9 +13,9 @@ import (
 
 var path = flag.String("c", "config.json", "Path to configuration file")
 
-var config = new(Config)
+var config *Config
 
-func init() {
+func read() {
 	flag.Parse()
 
 	f, err := ioutil.ReadFile(*path)
@@ -39,6 +39,10 @@ func init() {
 }
 
 func Get() *Config {
+	if config == nil {
+		config = new(Config)
+		read()
+	}
 	return config
 }
 
