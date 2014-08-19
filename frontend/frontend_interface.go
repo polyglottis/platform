@@ -14,6 +14,9 @@ type Server interface {
 	Flavor(context *Context, e *content.Extract, a, b *FlavorTriple) ([]byte, error)
 
 	EditText(context *Context, e *content.Extract, a, b *content.Flavor) ([]byte, error)
+
+	SignUp(context *Context) ([]byte, error)
+	SignIn(context *Context) ([]byte, error)
 }
 
 type FlavorTriple struct {

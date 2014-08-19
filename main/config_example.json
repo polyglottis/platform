@@ -4,8 +4,8 @@
 	"UserDB": "user.db",
 	
 	"HttpServer": ":8080",
-	"TemplateRoot": "../../frontend_server",
-	"StaticDir": "../../../../../../web",
+	"TemplateRoot": "frontend_server",
+	"StaticDir": "../../../../web",
 
 	"Frontend": ":18658",
 	"Content":  ":18982",

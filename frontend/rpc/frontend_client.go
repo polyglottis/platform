@@ -79,3 +79,10 @@ func (c *Client) EditText(context *frontend.Context, extract *content.Extract, a
 	}
 	return response, nil
 }
+
+func (c *Client) SignUp(context *frontend.Context) ([]byte, error) {
+	return c.call("SignUp", context)
+}
+func (c *Client) SignIn(context *frontend.Context) ([]byte, error) {
+	return c.call("SignIn", context)
+}

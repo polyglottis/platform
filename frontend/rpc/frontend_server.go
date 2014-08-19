@@ -30,6 +30,16 @@ func (s *FrontendServer) NotFound(context *frontend.Context, r *[]byte) (err err
 	return
 }
 
+func (s *FrontendServer) SignUp(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.SignUp(context)
+	return
+}
+
+func (s *FrontendServer) SignIn(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.SignIn(context)
+	return
+}
+
 type ContextExtract struct {
 	Context *frontend.Context
 	Extract *content.Extract
