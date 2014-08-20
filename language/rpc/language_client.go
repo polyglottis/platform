@@ -25,3 +25,8 @@ func (c *Client) GetCode(code string) (language.Code, error) {
 	}
 	return *reply, nil
 }
+
+func (c *Client) List() (list []language.Code, err error) {
+	err = c.c.Call("LanguageServer.List", false, &list)
+	return
+}

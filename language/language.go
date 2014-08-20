@@ -21,5 +21,6 @@ var English = Language{
 
 // Server is the interface a language server should comply to.
 type Server interface {
+	List() ([]Code, error)
 	GetCode(maybeCode string) (Code, error)
 }

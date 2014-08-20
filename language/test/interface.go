@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/polyglottis/platform/language"
 )
@@ -27,4 +28,26 @@ func Invalid(server language.Server) error {
 		return fmt.Errorf("GetCode('%s') should return language Unknown", invalid)
 	}
 	return nil
+}
+
+func List(server language.Server) error {
+	_, err := server.List()
+	return err
+}
+
+func All(server language.Server, t *testing.T) {
+	err := English(server)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = Invalid(server)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = List(server)
+	if err != nil {
+		t.Error(err)
+	}
 }

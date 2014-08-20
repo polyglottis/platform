@@ -18,6 +18,10 @@ func (s *server) GetCode(code string) (language.Code, error) {
 	}
 }
 
+func (s *server) List() ([]language.Code, error) {
+	return []language.Code{language.English.Code}, nil
+}
+
 func TestServerAndClient(t *testing.T) {
 	addr := ":1234"
 
@@ -35,13 +39,5 @@ func TestServerAndClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = test.English(c)
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = test.Invalid(c)
-	if err != nil {
-		t.Error(err)
-	}
+	test.All(c, t)
 }

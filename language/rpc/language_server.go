@@ -19,11 +19,12 @@ func NewLanguageServer(s language.Server, addr string) *rpc.Server {
 	return rpc.NewServer("LanguageServer", &LanguageServer{s}, addr)
 }
 
-func (s *LanguageServer) GetCode(code string, reply *language.Code) error {
-	newCode, err := s.s.GetCode(code)
-	if err != nil {
-		return err
-	}
-	*reply = newCode
-	return nil
+func (s *LanguageServer) GetCode(code string, reply *language.Code) (err error) {
+	*reply, err = s.s.GetCode(code)
+	return
+}
+
+func (s *LanguageServer) List(nothing bool, list *[]language.Code) (err error) {
+	*list, err = s.s.List()
+	return
 }
