@@ -3,17 +3,22 @@ package frontend
 
 import (
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 )
 
 // Server is the interface a frontend server should comply to.
 type Server interface {
+	SetLanguageList([]language.Code) error
+
 	Home(context *Context) ([]byte, error)
+	Error(context *Context) ([]byte, error)
 	NotFound(context *Context) ([]byte, error)
 
 	Extract(context *Context, e *content.Extract) ([]byte, error)
 	Flavor(context *Context, e *content.Extract, a, b *FlavorTriple) ([]byte, error)
 
+	NewExtract(context *Context) ([]byte, error)
 	EditText(context *Context, e *content.Extract, a, b *content.Flavor) ([]byte, error)
 
 	SignUp(context *Context) ([]byte, error)

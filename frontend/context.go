@@ -13,7 +13,7 @@ import (
 )
 
 type Context struct {
-	Locale   language.Code
+	Locale   string
 	Vars     map[string]string
 	Query    url.Values
 	Form     url.Values
@@ -34,7 +34,7 @@ type Context struct {
 
 func ReadContext(r *http.Request, s *Session) (*Context, error) {
 	c := &Context{
-		Locale: language.English.Code,
+		Locale: "en-us",
 		Vars:   mux.Vars(r),
 		Query:  r.URL.Query(),
 		Url:    r.URL.String(),

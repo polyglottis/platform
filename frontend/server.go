@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -13,14 +14,17 @@ import (
 
 type Worker struct {
 	*backend.Engine
-	Server Server
+	Server          Server
+	languageListSet bool
 }
 
 func NewWorker(engine *backend.Engine, frontendServer Server) *Worker {
-	return &Worker{
+	w := &Worker{
 		Engine: engine,
 		Server: frontendServer,
 	}
+	go w.fetchLanguageListPeriodically()
+	return w
 }
 
 func (w *Worker) RegisterRoutes(r *mux.Router) {
@@ -35,6 +39,7 @@ func (w *Worker) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandler(w.GetResetPassword)).Methods("GET")
 	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandlerForm(w.ResetPassword)).Methods("POST")
 
+	r.HandleFunc("/extract/edit/new", w.contextHandler(w.Server.NewExtract))
 	r.HandleFunc("/extract/edit/text", w.contextHandler(w.EditText))
 
 	r.HandleFunc("/extract/{slug}", w.contextHandler(w.Extract))
@@ -53,9 +58,7 @@ func (w *Worker) contextHandlerForm(f func(*Context, *Session) ([]byte, error)) 
 }
 
 func (w *Worker) contextHandlerCode(code int, f func(*Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
-	return w.contextHandlerFull(code, func(c *Context, s *Session) ([]byte, error) {
-		return f(c)
-	}, false)
+	return w.contextHandlerFull(code, forgetSession(f), false)
 }
 
 func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([]byte, error), hasForm bool) func(http.ResponseWriter, *http.Request) {
@@ -74,23 +77,56 @@ func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([
 			context, err = ReadContext(r, session)
 		}
 		if err == nil {
-			bytes, err := f(context, session)
-			switch {
-			case err == nil:
-				w.WriteHeader(code)
-				w.Write(bytes)
-			case err == content.ErrNotFound:
-				worker.contextHandlerCode(http.StatusNotFound, worker.Server.NotFound)(w, r)
-			default:
-				// hack to redirect: it is not an error to redirect, but it is handy to return a redirection in the error...
-				if redir, ok := err.(*redirect); ok {
-					http.Redirect(w, r, redir.urlStr, redir.code)
-				} else {
-					server.InternalError(r, w, err)
-				}
-			}
+			worker.do(&job{Code: code, HasForm: hasForm, Context: context, Session: session,
+				F: f, W: w, R: r})
 		} else {
 			server.InternalError(r, w, err)
+		}
+	}
+}
+
+func forgetSession(f func(*Context) ([]byte, error)) func(*Context, *Session) ([]byte, error) {
+	return func(c *Context, s *Session) ([]byte, error) {
+		return f(c)
+	}
+}
+
+type job struct {
+	Code      int
+	F         func(*Context, *Session) ([]byte, error)
+	HasForm   bool
+	Session   *Session
+	Context   *Context
+	W         http.ResponseWriter
+	R         *http.Request
+	secondTry bool
+}
+
+func (w *Worker) do(job *job) {
+	bytes, err := job.F(job.Context, job.Session)
+	switch {
+	case err == nil:
+		job.W.WriteHeader(job.Code)
+		job.W.Write(bytes)
+	case err == content.ErrNotFound && !job.secondTry:
+		job.Code = http.StatusNotFound
+		job.F = forgetSession(w.Server.NotFound)
+		job.secondTry = true
+		w.do(job)
+	default:
+		// hack to redirect: it is not an error to redirect, but it is handy to return a redirection in the error...
+		if redir, ok := err.(*redirect); ok {
+			http.Redirect(job.W, job.R, redir.urlStr, redir.code)
+		} else {
+			if job.secondTry {
+				server.InternalError(job.R, job.W, err)
+			} else {
+				log.Println("Frontend server error:", err)
+				job.Code = http.StatusInternalServerError
+				job.F = forgetSession(w.Server.Error)
+				job.secondTry = true
+				w.do(job)
+			}
 		}
 	}
 }

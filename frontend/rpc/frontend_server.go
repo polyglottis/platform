@@ -5,6 +5,7 @@ package rpc
 import (
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
+	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rpc"
 )
@@ -21,11 +22,17 @@ func NewFrontendServer(s frontend.Server, addr string) *rpc.Server {
 	return rpc.NewServer("FrontendServer", &FrontendServer{s}, addr)
 }
 
+func (s *FrontendServer) SetLanguageList(list []language.Code, nothing *bool) error {
+	return s.s.SetLanguageList(list)
+}
 func (s *FrontendServer) Home(context *frontend.Context, r *[]byte) (err error) {
 	*r, err = s.s.Home(context)
 	return
 }
-
+func (s *FrontendServer) Error(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.Error(context)
+	return
+}
 func (s *FrontendServer) NotFound(context *frontend.Context, r *[]byte) (err error) {
 	*r, err = s.s.NotFound(context)
 	return
@@ -35,11 +42,11 @@ func (s *FrontendServer) SignUp(context *frontend.Context, r *[]byte) (err error
 	*r, err = s.s.SignUp(context)
 	return
 }
-
 func (s *FrontendServer) SignIn(context *frontend.Context, r *[]byte) (err error) {
 	*r, err = s.s.SignIn(context)
 	return
 }
+
 func (s *FrontendServer) ForgotPassword(context *frontend.Context, r *[]byte) (err error) {
 	*r, err = s.s.ForgotPassword(context)
 	return
@@ -81,6 +88,10 @@ func (s *FrontendServer) Flavor(cf *ContextFlavorTriples, r *[]byte) (err error)
 	return
 }
 
+func (s *FrontendServer) NewExtract(context *frontend.Context, r *[]byte) (err error) {
+	*r, err = s.s.NewExtract(context)
+	return
+}
 func (s *FrontendServer) EditText(cf *ContextFlavors, r *[]byte) (err error) {
 	*r, err = s.s.EditText(cf.Context, cf.Extract, cf.A, cf.B)
 	return

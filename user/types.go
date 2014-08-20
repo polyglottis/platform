@@ -12,6 +12,7 @@ type Name string
 
 type Account struct {
 	Name         Name
+	UILocale     string
 	MainLanguage language.Code
 	Email        string
 	Active       bool
@@ -20,7 +21,7 @@ type Account struct {
 
 type NewAccountRequest struct {
 	Name         Name
-	MainLanguage language.Code
+	UILocale     string
 	Email        string
 	PasswordHash []byte
 }

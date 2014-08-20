@@ -57,6 +57,15 @@ const (
 	WordList   ExtractType = "word_list"
 )
 
+var AllExtractTypes = []ExtractType{
+	Dialog,
+	WordList,
+	ShortStory,
+	Article,
+	Poem,
+	Song,
+}
+
 func ValidExtractType(t ExtractType) bool {
 	for _, candidate := range []ExtractType{
 		Article,

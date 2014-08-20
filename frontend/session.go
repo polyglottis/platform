@@ -33,6 +33,7 @@ func init() {
 		if err != nil {
 			log.Fatalf("Unable to create session key file at %s: %v", keyFile, err)
 		}
+		defer f.Close()
 
 		_, err = f.Write(toSave)
 		if err != nil {

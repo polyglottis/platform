@@ -7,7 +7,7 @@ import (
 func NewAccount(r *NewAccountRequest) *Account {
 	return &Account{
 		Name:         r.Name,
-		MainLanguage: r.MainLanguage,
+		UILocale:     r.UILocale,
 		Email:        r.Email,
 		Active:       true,
 		PasswordHash: r.PasswordHash,
@@ -22,6 +22,7 @@ func (a *Account) Equals(b *Account) bool {
 	}
 	// now a != nil and b != nil
 	if a.Name != b.Name ||
+		a.UILocale != b.UILocale ||
 		a.MainLanguage != b.MainLanguage ||
 		a.Email != b.Email ||
 		a.Active != b.Active ||

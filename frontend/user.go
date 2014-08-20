@@ -81,7 +81,7 @@ func (w *Worker) SignUp(context *Context, session *Session) ([]byte, error) {
 	a, err := w.User.NewAccount(&user.NewAccountRequest{
 		Name:         user.Name(args.User),
 		Email:        args.Email,
-		MainLanguage: context.Locale,
+		UILocale:     context.Locale,
 		PasswordHash: hash,
 	})
 	if err != nil {

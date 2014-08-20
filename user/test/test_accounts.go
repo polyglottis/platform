@@ -22,7 +22,7 @@ func NewTester(server user.Server, t *testing.T) *Tester {
 
 var Account = &user.NewAccountRequest{
 	Name:         "testUser",
-	MainLanguage: language.English.Code,
+	UILocale:     "en-us",
 	Email:        "test@test.com",
 	PasswordHash: []byte("testPW"),
 }
@@ -41,6 +41,7 @@ func (t *Tester) All() {
 	a.Email = "newTest@test.com"
 	a.Active = false
 	a.MainLanguage = language.Unknown.Code
+	a.UILocale = "de"
 	a.PasswordHash = []byte("updatedPW")
 	t.UpdateAccount(a)
 
@@ -73,7 +74,7 @@ func (t *Tester) NewTwice(r *user.NewAccountRequest) *user.Account {
 }
 
 func (t *Tester) Equals(a *user.Account, r *user.NewAccountRequest) {
-	if a.Name != r.Name || a.MainLanguage != r.MainLanguage || a.Email != r.Email || !bytes.Equal(a.PasswordHash, r.PasswordHash) {
+	if a.Name != r.Name || a.UILocale != r.UILocale || a.Email != r.Email || !bytes.Equal(a.PasswordHash, r.PasswordHash) {
 		t.Errorf("These accounts should coincide, except for the Active field: %+v != %+v", a, r)
 	}
 }
