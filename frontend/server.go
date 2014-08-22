@@ -39,7 +39,8 @@ func (w *Worker) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandler(w.GetResetPassword)).Methods("GET")
 	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandlerForm(w.ResetPassword)).Methods("POST")
 
-	r.HandleFunc("/extract/edit/new", w.contextHandler(w.Server.NewExtract))
+	r.HandleFunc("/extract/edit/new", w.contextHandler(w.Server.NewExtract)).Methods("GET")
+	r.HandleFunc("/extract/edit/new", w.contextHandlerForm(w.NewExtract)).Methods("POST")
 	r.HandleFunc("/extract/edit/text", w.contextHandler(w.EditText))
 
 	r.HandleFunc("/extract/{slug}", w.contextHandler(w.Extract))

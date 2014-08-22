@@ -6,9 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/i18n"
-	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 )
 
@@ -26,10 +24,6 @@ type Context struct {
 
 	Defaults url.Values          // default form values
 	Errors   map[string]i18n.Key // errors on form submit
-
-	ExtractId content.ExtractId
-	LanguageA language.Code
-	LanguageB language.Code
 }
 
 func ReadContext(r *http.Request, s *Session) (*Context, error) {

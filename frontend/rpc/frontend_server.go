@@ -60,16 +60,6 @@ func (s *FrontendServer) ResetPassword(context *frontend.Context, r *[]byte) (er
 	return
 }
 
-type ContextExtract struct {
-	Context *frontend.Context
-	Extract *content.Extract
-}
-
-func (s *FrontendServer) Extract(ce *ContextExtract, r *[]byte) (err error) {
-	*r, err = s.s.Extract(ce.Context, ce.Extract)
-	return
-}
-
 type ContextFlavorTriples struct {
 	Context *frontend.Context
 	Extract *content.Extract

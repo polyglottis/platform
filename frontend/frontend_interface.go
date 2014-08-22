@@ -15,7 +15,6 @@ type Server interface {
 	Error(context *Context) ([]byte, error)
 	NotFound(context *Context) ([]byte, error)
 
-	Extract(context *Context, e *content.Extract) ([]byte, error)
 	Flavor(context *Context, e *content.Extract, a, b *FlavorTriple) ([]byte, error)
 
 	NewExtract(context *Context) ([]byte, error)
@@ -33,4 +32,17 @@ type FlavorTriple struct {
 	Audio      *content.Flavor
 	Text       *content.Flavor
 	Transcript *content.Flavor
+}
+
+func (t *FlavorTriple) Language() language.Code {
+	switch {
+		case t.Text != nil :
+		return t.Text.Language
+		case t.Audio != nil :
+			return t.Audio.Language
+		case t.Transcript != nil:
+			return t.Transcript.Language
+		default:
+			return language.Unknown.Code
+	}
 }

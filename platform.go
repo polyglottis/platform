@@ -36,7 +36,7 @@ type MainServer struct {
 }
 
 func NewServer(addr string) *MainServer {
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
 	return &MainServer{
 		Router: r,
 		http: &http.Server{

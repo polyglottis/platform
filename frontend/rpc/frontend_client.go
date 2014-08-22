@@ -26,14 +26,6 @@ func (c *Client) call(funcName string, context *frontend.Context) (response []by
 	return
 }
 
-func (c *Client) callExtract(funcName string, context *frontend.Context, e *content.Extract) (response []byte, err error) {
-	err = c.rpc.Call("FrontendServer."+funcName, &ContextExtract{
-		Context: context,
-		Extract: e,
-	}, &response)
-	return
-}
-
 func (c *Client) SetLanguageList(list []language.Code) error {
 	return c.rpc.Call("FrontendServer.SetLanguageList", list, nil)
 }
@@ -46,10 +38,6 @@ func (c *Client) Error(context *frontend.Context) ([]byte, error) {
 }
 func (c *Client) NotFound(context *frontend.Context) ([]byte, error) {
 	return c.call("NotFound", context)
-}
-
-func (c *Client) Extract(context *frontend.Context, extract *content.Extract) ([]byte, error) {
-	return c.callExtract("Extract", context, extract)
 }
 
 func (c *Client) Flavor(context *frontend.Context, extract *content.Extract, a, b *frontend.FlavorTriple) (response []byte, err error) {

@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 )
@@ -159,11 +160,16 @@ type Extract struct {
 
 var validSlug = regexp.MustCompile(`^[A-Za-z0-9_]*$`)
 
-func ValidSlug(slug string) bool {
+// ValidSlug returns true if slug has at least 5 characters and matches ^[A-Za-z0-9_]*$.
+// Otherwise an (error) message is returned.
+func ValidSlug(slug string) (bool, i18n.Key) {
 	if len(slug) < 5 {
-		return false
+		return false, "Slug too short."
 	}
-	return validSlug.MatchString(slug)
+	if !validSlug.MatchString(slug) {
+		return false, "Only unaccented letters, numbers and underscores are allowed."
+	}
+	return true, ""
 }
 
 type FlavorMap map[language.Code]FlavorByType

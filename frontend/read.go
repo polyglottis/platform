@@ -1,6 +1,8 @@
 package frontend
 
 import (
+	"log"
+
 	"github.com/polyglottis/platform/content"
 )
 
@@ -14,17 +16,24 @@ func (w *Worker) Extract(context *Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return w.extract(context, id)
+	return w.extractById(context, id)
 }
 
-func (w *Worker) extract(context *Context, id content.ExtractId) ([]byte, error) {
+func (w *Worker) extractById(context *Context, id content.ExtractId) ([]byte, error) {
 	extract, err := w.Content.GetExtract(id)
 	if err != nil {
 		return nil, err
 	}
-	context.ExtractId = id
-	return w.Server.Extract(context, extract)
+	return w.extract(context, extract)
+}
+
+func (w *Worker) extract(context *Context, extract *content.Extract) ([]byte, error) {
+	for _, fByType := range extract.Flavors { // not great: not even deterministic...
+		a := newFlavorTriple(fByType)
+		return w.Server.Flavor(context, extract, a, &FlavorTriple{})
+	}
+	log.Println("Weird: extract with no flavor:", extract.Id)
+	return nil, content.ErrNotFound
 }
 
 func (w *Worker) Flavor(context *Context) ([]byte, error) {
@@ -42,29 +51,32 @@ func (w *Worker) Flavor(context *Context) ([]byte, error) {
 	langCode, err := w.Language.GetCode(lang)
 	if err != nil {
 		// language not found, fall back to extract
-		return w.extract(context, id)
+		return w.extractById(context, id)
 	}
-	context.LanguageA = langCode
 
 	extract, err := w.Content.GetExtract(id)
 	if err != nil {
 		return nil, err
 	}
-	context.ExtractId = id
 
 	if fByType, ok := extract.Flavors[langCode]; ok {
-		a := &FlavorTriple{}
-		if audio, ok := fByType[content.Audio]; ok {
-			a.Audio = audio[0]
-		}
-		if text, ok := fByType[content.Text]; ok {
-			a.Text = text[0]
-		}
-		if transcript, ok := fByType[content.Transcript]; ok {
-			a.Transcript = transcript[0]
-		}
+		a := newFlavorTriple(fByType)
 		return w.Server.Flavor(context, extract, a, &FlavorTriple{})
 	}
 	// flavor not found, fall back to extract
-	return w.Server.Extract(context, extract)
+	return w.extract(context, extract)
+}
+
+func newFlavorTriple(fByType content.FlavorByType) *FlavorTriple {
+	a := &FlavorTriple{}
+	if audio, ok := fByType[content.Audio]; ok {
+		a.Audio = audio[0]
+	}
+	if text, ok := fByType[content.Text]; ok {
+		a.Text = text[0]
+	}
+	if transcript, ok := fByType[content.Transcript]; ok {
+		a.Transcript = transcript[0]
+	}
+	return a
 }
