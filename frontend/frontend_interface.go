@@ -36,13 +36,13 @@ type FlavorTriple struct {
 
 func (t *FlavorTriple) Language() language.Code {
 	switch {
-		case t.Text != nil :
+	case t.Text != nil:
 		return t.Text.Language
-		case t.Audio != nil :
-			return t.Audio.Language
-		case t.Transcript != nil:
-			return t.Transcript.Language
-		default:
-			return language.Unknown.Code
+	case t.Audio != nil:
+		return t.Audio.Language
+	case t.Transcript != nil:
+		return t.Transcript.Language
+	default:
+		return language.Unknown.Code
 	}
 }
