@@ -60,5 +60,5 @@ func (s *MainServer) RegisterStatic(path string) {
 	s.Router.PathPrefix("/static/css/").Handler(handler)
 	s.Router.PathPrefix("/static/img/").Handler(handler)
 	s.Router.PathPrefix("/static/js/").Handler(handler)
-	s.Router.PathPrefix("/favicon.ico").Handler(http.FileServer(http.Dir(path + "/img")))
+	s.Router.PathPrefix("/favicon.ico").Handler(http.FileServer(http.Dir(path)))
 }
