@@ -57,9 +57,10 @@ func (w *Worker) SignUp(context *frontend.Context, session *Session) ([]byte, er
 	}
 
 	if len(errors) != 0 {
-		context.Defaults = url.Values{}
-		context.Defaults.Set("User", args.User)
-		context.Defaults.Set("Email", args.Email)
+		defaults := url.Values{}
+		defaults.Set("User", args.User)
+		defaults.Set("Email", args.Email)
+		session.SaveDefaults(defaults)
 		session.SaveFlashErrors(errors)
 		return nil, redirectToOther(context.Url)
 	}
@@ -85,5 +86,6 @@ func (w *Worker) SignUp(context *frontend.Context, session *Session) ([]byte, er
 		return nil, err
 	}
 
+	session.ClearDefaults()
 	return nil, redirectToOther("/")
 }

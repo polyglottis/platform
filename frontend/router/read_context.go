@@ -11,12 +11,13 @@ import (
 
 func ReadContext(r *http.Request, s *handle.Session) (*frontend.Context, error) {
 	c := &frontend.Context{
-		Locale: "en-us",
-		Vars:   mux.Vars(r),
-		Query:  r.URL.Query(),
-		Url:    r.URL.String(),
-		Host:   r.Host,
-		Errors: s.ReadFlashErrors(),
+		Locale:   "en-us",
+		Vars:     mux.Vars(r),
+		Query:    r.URL.Query(),
+		Url:      r.URL.String(),
+		Host:     r.Host,
+		Errors:   s.ReadFlashErrors(),
+		Defaults: s.GetDefaults(),
 	}
 
 	if r.TLS == nil {

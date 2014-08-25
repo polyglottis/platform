@@ -3,6 +3,7 @@ package handle
 import (
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/sessions"
 
@@ -12,16 +13,18 @@ import (
 )
 
 type Session struct {
-	session *sessions.Session
-	r       *http.Request
-	w       http.ResponseWriter
+	session  *sessions.Session
+	defaults *sessions.Session
+	r        *http.Request
+	w        http.ResponseWriter
 }
 
-func newSession(s *sessions.Session, r *http.Request, w http.ResponseWriter) *Session {
+func newSession(s *sessions.Session, defaults *sessions.Session, r *http.Request, w http.ResponseWriter) *Session {
 	return &Session{
-		session: s,
-		r:       r,
-		w:       w,
+		session:  s,
+		defaults: defaults,
+		r:        r,
+		w:        w,
 	}
 }
 
@@ -74,4 +77,30 @@ func (s *Session) ReadFlashErrors() frontend.ErrorMap {
 		log.Println("No flashes...")
 	}
 	return nil
+}
+
+func (s *Session) SaveDefaults(values url.Values) {
+	s.defaults.Options = &sessions.Options{
+		Path:   s.r.URL.String(),
+		MaxAge: 3600,
+	}
+	s.defaults.Values["def"] = values
+	s.defaults.Save(s.r, s.w)
+}
+
+func (s *Session) GetDefaults() url.Values {
+	if def, ok := s.defaults.Values["def"]; ok {
+		if defaults, ok := def.(url.Values); ok {
+			return defaults
+		}
+	}
+	return nil
+}
+
+func (s *Session) ClearDefaults() {
+	s.defaults.Options = &sessions.Options{
+		Path:   s.r.URL.String(),
+		MaxAge: 0,
+	}
+	s.defaults.Save(s.r, s.w)
 }

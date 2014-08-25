@@ -33,8 +33,9 @@ func (w *Worker) SignIn(context *frontend.Context, session *Session) ([]byte, er
 	if err == user.AccountNotFound || !password.Check(args.Password, a) {
 		sleep()
 		session.SaveFlashError("Incorrect username or password.")
-		context.Defaults = url.Values{}
-		context.Defaults.Set("User", args.User)
+		defaults := url.Values{}
+		defaults.Set("User", args.User)
+		session.SaveDefaults(defaults)
 		return nil, redirectToOther(context.Url)
 	}
 
@@ -48,6 +49,7 @@ func (w *Worker) SignIn(context *frontend.Context, session *Session) ([]byte, er
 	if len(returnTo) == 0 {
 		returnTo = "/"
 	}
+	session.ClearDefaults()
 	return nil, redirectToOther(returnTo)
 }
 

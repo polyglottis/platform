@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -21,6 +22,7 @@ import (
 func init() {
 	gob.Register(&user.Account{})
 	gob.Register(frontend.ErrorMap{})
+	gob.Register(url.Values{})
 
 	keyFile := config.Get().SessionKeyPath
 	var keyPairs []*keyPair
@@ -81,14 +83,20 @@ func newKeyPair() *keyPair {
 
 var sessionStore *sessions.CookieStore
 
-func NewSession(r *http.Request, w http.ResponseWriter) *Session {
-	s, err := sessionStore.Get(r, "user")
+func readSession(key string, r *http.Request) *sessions.Session {
+	s, err := sessionStore.Get(r, key)
 	if err != nil {
-		log.Println("Unable to decode old session:", err)
-		s, err = sessionStore.New(r, "user")
+		log.Printf("Unable to decode old %s session: %v", key, err)
+		s, err = sessionStore.New(r, key)
 		if err != nil {
-			log.Println("Unable to create new session: is there a problem with the session keys file?", err)
+			log.Printf("Unable to create new %s session: is there a problem with the session keys file? %v", key, err)
 		}
 	}
-	return newSession(s, r, w)
+	return s
+}
+
+func NewSession(r *http.Request, w http.ResponseWriter) *Session {
+	s := readSession("user", r)
+	def := readSession("defaults", r)
+	return newSession(s, def, r, w)
 }

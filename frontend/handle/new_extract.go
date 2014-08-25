@@ -29,7 +29,7 @@ func (a *newExtractArgs) CleanUp() {
 
 func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte, error) {
 	errors := make(frontend.ErrorMap)
-	context.Defaults = url.Values{}
+	defaults := url.Values{}
 
 	if len(context.User) == 0 {
 		errors["FORM"] = i18n.Key("You must be logged in to perform this action.")
@@ -54,13 +54,13 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	}
 
 	if !content.ValidExtractType(content.ExtractType(args.ExtractType)) {
-		context.Defaults.Set("ExtractType", "")
+		defaults.Set("ExtractType", "")
 		errors["ExtractType"] = i18n.Key("Please select one option.")
 	}
 
 	langCode, err := w.Language.GetCode(args.Language)
 	if err != nil {
-		context.Defaults.Set("Language", "")
+		defaults.Set("Language", "")
 		errors["Language"] = i18n.Key("Please select one option.")
 	}
 
@@ -82,10 +82,11 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 
 	if len(errors) != 0 {
 		session.SaveFlashErrors(errors)
-		context.Defaults.Set("Slug", args.Slug)
-		context.Defaults.Set("Title", args.Title)
-		context.Defaults.Set("Summary", args.Summary)
-		context.Defaults.Set("Text", args.Text)
+		defaults.Set("Slug", args.Slug)
+		defaults.Set("Title", args.Title)
+		defaults.Set("Summary", args.Summary)
+		defaults.Set("Text", args.Text)
+		session.SaveDefaults(defaults)
 		return nil, redirectToOther(context.Url)
 	}
 
@@ -105,6 +106,8 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	if err != nil {
 		return nil, err
 	}
+
+	session.ClearDefaults()
 	return nil, redirectToOther("/extract/" + args.Slug)
 }
 
