@@ -1,9 +1,10 @@
-package frontend
+package handle
 
 import (
 	"strings"
 
 	"github.com/polyglottis/platform/config"
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 )
@@ -16,7 +17,7 @@ func (a *forgotPasswordArgs) CleanUp() {
 	a.Email = strings.TrimSpace(a.Email)
 }
 
-func (w *Worker) ForgotPassword(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) ForgotPassword(context *frontend.Context, session *Session) ([]byte, error) {
 	args := new(forgotPasswordArgs)
 	err := decoder.Decode(args, context.Form)
 	if err != nil {

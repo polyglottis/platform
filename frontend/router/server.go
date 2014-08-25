@@ -1,7 +1,7 @@
-package frontend
+// Package router contains the route definitions for the frontend server.
+package router
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -9,25 +9,22 @@ import (
 
 	"github.com/polyglottis/platform/backend"
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/frontend"
+	"github.com/polyglottis/platform/frontend/handle"
 	"github.com/polyglottis/platform/server"
 )
 
-type Worker struct {
-	*backend.Engine
-	Server          Server
-	languageListSet bool
+type Router struct {
+	*handle.Worker
 }
 
-func NewWorker(engine *backend.Engine, frontendServer Server) *Worker {
-	w := &Worker{
-		Engine: engine,
-		Server: frontendServer,
+func NewRouter(engine *backend.Engine, server frontend.Server) *Router {
+	return &Router{
+		Worker: handle.NewWorker(engine, server),
 	}
-	go w.fetchLanguageListPeriodically()
-	return w
 }
 
-func (w *Worker) RegisterRoutes(r *mux.Router) {
+func (w *Router) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/user/signup", w.contextHandler(w.Server.SignUp)).Methods("GET")
 	r.HandleFunc("/user/signin", w.contextHandler(w.Server.SignIn)).Methods("GET")
 	r.HandleFunc("/user/signup", w.contextHandlerForm(w.SignUp)).Methods("POST")
@@ -50,19 +47,19 @@ func (w *Worker) RegisterRoutes(r *mux.Router) {
 	r.NotFoundHandler = http.HandlerFunc(w.contextHandlerCode(http.StatusNotFound, w.Server.NotFound))
 }
 
-func (w *Worker) contextHandler(f func(*Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
+func (w *Router) contextHandler(f func(*frontend.Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
 	return w.contextHandlerCode(http.StatusOK, f)
 }
 
-func (w *Worker) contextHandlerForm(f func(*Context, *Session) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
+func (w *Router) contextHandlerForm(f func(*frontend.Context, *handle.Session) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
 	return w.contextHandlerFull(http.StatusOK, f, true)
 }
 
-func (w *Worker) contextHandlerCode(code int, f func(*Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
+func (w *Router) contextHandlerCode(code int, f func(*frontend.Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
 	return w.contextHandlerFull(code, forgetSession(f), false)
 }
 
-func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([]byte, error), hasForm bool) func(http.ResponseWriter, *http.Request) {
+func (worker *Router) contextHandlerFull(code int, f func(*frontend.Context, *handle.Session) ([]byte, error), hasForm bool) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
@@ -70,7 +67,7 @@ func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([
 			}
 		}()
 		var err error
-		var context *Context
+		var context *frontend.Context
 		session := readSession(r, w)
 		if hasForm {
 			context, err = ReadContextWithForm(r, session)
@@ -86,24 +83,24 @@ func (worker *Worker) contextHandlerFull(code int, f func(*Context, *Session) ([
 	}
 }
 
-func forgetSession(f func(*Context) ([]byte, error)) func(*Context, *Session) ([]byte, error) {
-	return func(c *Context, s *Session) ([]byte, error) {
+func forgetSession(f func(*frontend.Context) ([]byte, error)) func(*frontend.Context, *handle.Session) ([]byte, error) {
+	return func(c *frontend.Context, s *handle.Session) ([]byte, error) {
 		return f(c)
 	}
 }
 
 type job struct {
 	Code      int
-	F         func(*Context, *Session) ([]byte, error)
+	F         func(*frontend.Context, *handle.Session) ([]byte, error)
 	HasForm   bool
-	Session   *Session
-	Context   *Context
+	Session   *handle.Session
+	Context   *frontend.Context
 	W         http.ResponseWriter
 	R         *http.Request
 	secondTry bool
 }
 
-func (w *Worker) do(job *job) {
+func (w *Router) do(job *job) {
 	bytes, err := job.F(job.Context, job.Session)
 	switch {
 	case err == nil:
@@ -116,8 +113,8 @@ func (w *Worker) do(job *job) {
 		w.do(job)
 	default:
 		// hack to redirect: it is not an error to redirect, but it is handy to return a redirection in the error...
-		if redir, ok := err.(*redirect); ok {
-			http.Redirect(job.W, job.R, redir.urlStr, redir.code)
+		if redir, ok := err.(*handle.Redirect); ok {
+			http.Redirect(job.W, job.R, redir.UrlStr, redir.Code)
 		} else {
 			if job.secondTry {
 				server.InternalError(job.R, job.W, err)
@@ -130,18 +127,4 @@ func (w *Worker) do(job *job) {
 			}
 		}
 	}
-}
-
-type redirect struct {
-	urlStr string
-	code   int
-}
-
-func redirectTo(urlStr string, code int) *redirect {
-	return &redirect{urlStr: urlStr, code: code}
-}
-
-// Error is a hack: redirect is an error, thanks to this method
-func (r *redirect) Error() string {
-	return fmt.Sprintf("Redirect [%d] to %s", r.code, r.urlStr)
 }

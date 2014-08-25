@@ -1,13 +1,13 @@
-package frontend
+package handle
 
 import (
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/i18n"
 )
 
@@ -27,7 +27,7 @@ func (a *newExtractArgs) CleanUp() {
 	a.Text = strings.TrimSpace(a.Text)
 }
 
-func (w *Worker) NewExtract(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte, error) {
 	errors := make(map[string]i18n.Key)
 	context.Defaults = url.Values{}
 
@@ -98,7 +98,7 @@ func (w *Worker) NewExtract(context *Context, session *Session) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	return nil, redirectTo("/extract/"+args.Slug, http.StatusSeeOther)
+	return nil, redirectToOther("/extract/" + args.Slug)
 }
 
 var blockRegexp = regexp.MustCompile(`\s*\n\s*\n\s*`)

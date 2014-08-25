@@ -1,4 +1,4 @@
-package frontend
+package handle
 
 import (
 	"crypto/rand"

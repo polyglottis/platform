@@ -1,10 +1,10 @@
-package frontend
+package handle
 
 import (
-	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/platform/user/password"
@@ -22,7 +22,7 @@ func (a *SignUpArgs) CleanUp() {
 	a.Email = strings.TrimSpace(a.Email)
 }
 
-func (w *Worker) SignUp(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) SignUp(context *frontend.Context, session *Session) ([]byte, error) {
 	args := new(SignUpArgs)
 	err := decoder.Decode(args, context.Form)
 	if err != nil {
@@ -85,5 +85,5 @@ func (w *Worker) SignUp(context *Context, session *Session) ([]byte, error) {
 		return nil, err
 	}
 
-	return nil, redirectTo("/", http.StatusSeeOther)
+	return nil, redirectToOther("/")
 }

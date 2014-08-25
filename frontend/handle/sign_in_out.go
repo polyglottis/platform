@@ -1,10 +1,10 @@
-package frontend
+package handle
 
 import (
-	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/platform/user/password"
@@ -19,7 +19,7 @@ func (a *SignInArgs) CleanUp() {
 	a.User = strings.TrimSpace(a.User)
 }
 
-func (w *Worker) SignIn(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) SignIn(context *frontend.Context, session *Session) ([]byte, error) {
 	args := new(SignInArgs)
 	err := decoder.Decode(args, context.Form)
 	if err != nil {
@@ -51,15 +51,15 @@ func (w *Worker) SignIn(context *Context, session *Session) ([]byte, error) {
 	if len(returnTo) == 0 {
 		returnTo = "/"
 	}
-	return nil, redirectTo(returnTo, http.StatusSeeOther)
+	return nil, redirectToOther(returnTo)
 }
 
-func (w *Worker) SignOut(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) SignOut(context *frontend.Context, session *Session) ([]byte, error) {
 	session.RemoveAccount()
 	err := session.Save()
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, redirectTo("/", http.StatusSeeOther)
+	return nil, redirectToOther("/")
 }

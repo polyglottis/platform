@@ -1,11 +1,12 @@
-package frontend
+package handle
 
 import (
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/language"
 )
 
-func (w *Worker) EditText(context *Context) ([]byte, error) {
+func (w *Worker) EditText(context *frontend.Context) ([]byte, error) {
 	id := content.ExtractId(context.Query.Get("id"))
 	langA := context.Query.Get("a")
 	langB := context.Query.Get("b")

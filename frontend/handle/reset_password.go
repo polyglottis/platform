@@ -1,21 +1,20 @@
-package frontend
+package handle
 
 import (
-	"net/http"
-
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/platform/user/password"
 )
 
-func (w *Worker) checkToken(context *Context) (bool, error) {
+func (w *Worker) checkToken(context *frontend.Context) (bool, error) {
 	u := context.Vars["user"]
 	token := context.Vars["token"]
 
 	return w.User.ValidToken(user.Name(u), token)
 }
 
-func (w *Worker) GetResetPassword(context *Context) ([]byte, error) {
+func (w *Worker) GetResetPassword(context *frontend.Context) ([]byte, error) {
 	valid, err := w.checkToken(context)
 	if err != nil {
 		return nil, err
@@ -26,13 +25,13 @@ func (w *Worker) GetResetPassword(context *Context) ([]byte, error) {
 	return w.Server.ResetPassword(context)
 }
 
-func (w *Worker) linkExpired(context *Context) ([]byte, error) {
+func (w *Worker) linkExpired(context *frontend.Context) ([]byte, error) {
 	// TODO this is useless: we need to store the error in the flash messages
 	context.Errors = map[string]i18n.Key{
 		"FORM": i18n.Key("This link has expired. Please enter your email again."),
 	}
 	sleep()
-	return nil, redirectTo("/user/forgot_password", http.StatusSeeOther)
+	return nil, redirectToOther("/user/forgot_password")
 }
 
 type resetPasswordArgs struct {
@@ -40,7 +39,7 @@ type resetPasswordArgs struct {
 	PasswordConfirm string
 }
 
-func (w *Worker) ResetPassword(context *Context, session *Session) ([]byte, error) {
+func (w *Worker) ResetPassword(context *frontend.Context, session *Session) ([]byte, error) {
 	valid, err := w.checkToken(context)
 	if err != nil {
 		return nil, err
@@ -95,5 +94,5 @@ func (w *Worker) ResetPassword(context *Context, session *Session) ([]byte, erro
 		return nil, err
 	}
 
-	return nil, redirectTo("/", http.StatusSeeOther)
+	return nil, redirectToOther("/")
 }

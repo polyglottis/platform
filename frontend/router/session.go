@@ -1,4 +1,4 @@
-package frontend
+package router
 
 import (
 	"encoding/gob"
@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/sessions"
 
 	"github.com/polyglottis/platform/config"
+	"github.com/polyglottis/platform/frontend/handle"
 	"github.com/polyglottis/platform/user"
 )
 
@@ -79,36 +80,7 @@ func newKeyPair() *keyPair {
 
 var sessionStore *sessions.CookieStore
 
-type Session struct {
-	*sessions.Session
-	r *http.Request
-	w http.ResponseWriter
-}
-
-func (s *Session) SetAccount(a *user.Account) {
-	s.Values["account"] = a
-}
-
-func (s *Session) GetAccount() *user.Account {
-	if u, ok := s.Values["account"]; ok && u != nil {
-		if account, ok := u.(*user.Account); ok {
-			return account
-		} else {
-			log.Println("Unable to decode user account: did user.Account change recently?")
-		}
-	}
-	return nil
-}
-
-func (s *Session) RemoveAccount() {
-	delete(s.Values, "account")
-}
-
-func (s *Session) Save() error {
-	return s.Session.Save(s.r, s.w)
-}
-
-func readSession(r *http.Request, w http.ResponseWriter) *Session {
+func readSession(r *http.Request, w http.ResponseWriter) *handle.Session {
 	s, err := sessionStore.Get(r, "user")
 	if err != nil {
 		log.Println("Unable to decode old session:", err)
@@ -117,9 +89,5 @@ func readSession(r *http.Request, w http.ResponseWriter) *Session {
 			log.Println("Unable to create new session: is there a problem with the session keys file?", err)
 		}
 	}
-	return &Session{
-		Session: s,
-		r:       r,
-		w:       w,
-	}
+	return handle.NewSession(s, r, w)
 }

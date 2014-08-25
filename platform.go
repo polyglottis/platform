@@ -10,6 +10,7 @@ import (
 	"github.com/polyglottis/platform/backend"
 	"github.com/polyglottis/platform/config"
 	"github.com/polyglottis/platform/frontend"
+	"github.com/polyglottis/platform/frontend/router"
 )
 
 type Configuration struct {
@@ -22,7 +23,7 @@ func Launch(addr string, c *Configuration) error {
 	engine := backend.NewEngine(c.Backend)
 	server := NewServer(addr)
 	api.NewServer(engine).RegisterServices(server.Subrouter("/api"))
-	frontend.NewWorker(engine, c.Frontend).RegisterRoutes(server.Router)
+	router.NewRouter(engine, c.Frontend).RegisterRoutes(server.Router)
 	staticDir := config.Get().StaticDir
 	if len(staticDir) != 0 {
 		server.RegisterStatic(staticDir)
