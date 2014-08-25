@@ -8,6 +8,7 @@
 	"SessionKeyPath": "session_keys.txt",
 	"EmailConfigPath": "email_user.json",
 	"StaticDir": "../../../../web",
+	"AngularLocal": true,
 
 	"Frontend": ":18658",
 	"Content":  ":18982",

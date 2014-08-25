@@ -58,6 +58,7 @@ type Config struct {
 	SessionKeyPath  string // path to session keys file (the file will be automatically created if not present)
 	EmailConfigPath string // path to email (smtp) server configuration file (this file must contain a json-encoded github.com/polyglottis/email.User)
 	StaticDir       string // optional: if present, the server also serves static files from there
+	AngularLocal    bool   // if true, angular is fetched from static server instead of CDN.
 
 	// Optional, only for distributed version over rpc:
 	Frontend   string // frontend server
