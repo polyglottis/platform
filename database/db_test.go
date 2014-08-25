@@ -93,3 +93,48 @@ func TestInvalidSchema(t *testing.T) {
 		t.Fatal("Expected schema error but got:", err)
 	}
 }
+
+func TestValidSchema(t *testing.T) {
+	os.Remove(testDB)
+
+	db, err := sql.Open("sqlite3", testDB)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(testDB)
+
+	if db == nil {
+		t.Fatal("Open should never return a nil db")
+	}
+
+	mydb, err := Create(db, Schema{{
+		Name: "test_table",
+		Columns: Columns{{
+			Field:      "id",
+			Type:       "text",
+			Constraint: "primary key not null",
+		}},
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mydb.Close()
+
+	db, err = sql.Open("sqlite3", testDB)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = Create(db, Schema{{
+		Name: "test_table",
+		Columns: Columns{{
+			Field:      "ID",
+			Type:       "TEXT",
+			Constraint: "PRIMARY KEY not null",
+		}},
+	}})
+	if err != nil {
+		t.Fatal("[schema should be case-insensitive]", err)
+	}
+}

@@ -79,7 +79,7 @@ func (db *DB) createTablesIfNotExist() error {
 		}
 
 		if tableSql.Valid {
-			if tableSql.String != stmt {
+			if !strings.EqualFold(tableSql.String, stmt) {
 				return fmt.Errorf("Inconsistent schema for table %s: found %s but want %s", table.Name, tableSql.String, stmt)
 			}
 		} else {
