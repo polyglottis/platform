@@ -66,17 +66,23 @@ func (c Columns) String() string {
 
 func (db *DB) createTablesIfNotExist() error {
 	for _, table := range db.schema {
-		count, err := db.QueryInt("SELECT count(1) FROM sqlite_master WHERE type=? AND name=?", "table", table.Name)
-		if err != nil {
+		cols := table.Columns.String()
+		if len(table.PrimaryKey) != 0 {
+			cols += fmt.Sprintf(", primary key (%s)", strings.Join(table.PrimaryKey, ","))
+		}
+		stmt := fmt.Sprintf("create table %s (%s)", table.Name, cols)
+
+		var tableSql sql.NullString
+		err := db.QueryRow("SELECT sql FROM sqlite_master WHERE type=? AND name=?", "table", table.Name).Scan(&tableSql)
+		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
 
-		if count == 0 {
-			cols := table.Columns.String()
-			if len(table.PrimaryKey) != 0 {
-				cols += fmt.Sprintf(", primary key (%s)", strings.Join(table.PrimaryKey, ","))
+		if tableSql.Valid {
+			if tableSql.String != stmt {
+				return fmt.Errorf("Inconsistent schema for table %s: found %s but want %s", table.Name, tableSql.String, stmt)
 			}
-			stmt := fmt.Sprintf("create table %s (%s)", table.Name, cols)
+		} else {
 			_, err := db.Exec(stmt)
 			if err != nil {
 				return err
