@@ -8,20 +8,7 @@ import (
 )
 
 func (w *Worker) Extract(context *frontend.Context) ([]byte, error) {
-	slug := context.Vars["slug"]
-	if len(slug) == 0 {
-		return nil, content.ErrNotFound
-	}
-
-	id, err := w.Content.GetExtractId(slug)
-	if err != nil {
-		return nil, err
-	}
-	return w.extractById(context, id)
-}
-
-func (w *Worker) extractById(context *frontend.Context, id content.ExtractId) ([]byte, error) {
-	extract, err := w.Content.GetExtract(id)
+	extract, err := w.readExtract(context)
 	if err != nil {
 		return nil, err
 	}
@@ -38,26 +25,15 @@ func (w *Worker) extract(context *frontend.Context, extract *content.Extract) ([
 }
 
 func (w *Worker) Flavor(context *frontend.Context) ([]byte, error) {
-	slug := context.Vars["slug"]
-	lang := context.Vars["language"]
-	if len(slug) == 0 {
-		return nil, content.ErrNotFound
-	}
-
-	id, err := w.Content.GetExtractId(slug)
+	extract, err := w.readExtract(context)
 	if err != nil {
 		return nil, err
 	}
 
-	langCode, err := w.Language.GetCode(lang)
+	langCode, err := w.Language.GetCode(context.Vars["language"])
 	if err != nil {
 		// language not found, fall back to extract
-		return w.extractById(context, id)
-	}
-
-	extract, err := w.Content.GetExtract(id)
-	if err != nil {
-		return nil, err
+		return w.extract(context, extract)
 	}
 
 	if fByType, ok := extract.Flavors[langCode]; ok {

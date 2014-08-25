@@ -51,11 +51,13 @@ func (s *Session) Save() error {
 	return s.session.Save(s.r, s.w)
 }
 
+// SaveFlashErrors saves the error map into the session flash messages.
 func (s *Session) SaveFlashErrors(errMap frontend.ErrorMap) {
 	s.session.AddFlash(errMap)
 	s.Save()
 }
 
+// SaveFlashError is a shorthand for saving a single error message for the whole form (key "FORM").
 func (s *Session) SaveFlashError(msg i18n.Key) {
 	s.SaveFlashErrors(frontend.ErrorMap{
 		"FORM": msg,
@@ -63,6 +65,8 @@ func (s *Session) SaveFlashError(msg i18n.Key) {
 	s.Save()
 }
 
+// ReadFlashErrors reads the errors stored in the flash messages.
+// Calling this method flushes the flash messages immediately.
 func (s *Session) ReadFlashErrors() frontend.ErrorMap {
 	if flashes := s.session.Flashes(); len(flashes) != 0 {
 		defer s.Save()
@@ -79,6 +83,7 @@ func (s *Session) ReadFlashErrors() frontend.ErrorMap {
 	return nil
 }
 
+// SaveDefaults saves the values as default for the current form.
 func (s *Session) SaveDefaults(values url.Values) {
 	s.defaults.Options = &sessions.Options{
 		Path:   s.r.URL.String(),
@@ -88,6 +93,14 @@ func (s *Session) SaveDefaults(values url.Values) {
 	s.defaults.Save(s.r, s.w)
 }
 
+// SaveDefault is a shorthand for saving a single default key-value pair.
+func (s *Session) SaveDefault(key, value string) {
+	defaults := url.Values{}
+	defaults.Set(key, value)
+	s.SaveDefaults(defaults)
+}
+
+// GetDefaults returns the default values for the current form.
 func (s *Session) GetDefaults() url.Values {
 	if def, ok := s.defaults.Values["def"]; ok {
 		if defaults, ok := def.(url.Values); ok {
@@ -97,6 +110,8 @@ func (s *Session) GetDefaults() url.Values {
 	return nil
 }
 
+// ClearDefaults clears the default values for the current form.
+// It is typically called when a post request was successful.
 func (s *Session) ClearDefaults() {
 	s.defaults.Options = &sessions.Options{
 		Path:   s.r.URL.String(),

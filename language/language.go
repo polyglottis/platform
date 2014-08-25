@@ -1,6 +1,10 @@
 // Package language defines language codes, the language struct, and the language server interface.
 package language
 
+import (
+	"errors"
+)
+
 type Code string
 
 type Language struct {
@@ -24,3 +28,5 @@ type Server interface {
 	List() ([]Code, error)
 	GetCode(maybeCode string) (Code, error)
 }
+
+var CodeNotFound = errors.New("Language code not found")

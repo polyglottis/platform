@@ -7,29 +7,9 @@ import (
 )
 
 func (w *Worker) EditText(context *frontend.Context) ([]byte, error) {
-	id := content.ExtractId(context.Query.Get("id"))
-	langA := context.Query.Get("a")
-	langB := context.Query.Get("b")
-	if len(id) == 0 || len(langA) == 0 {
-		return nil, content.ErrInvalidInput
-	}
-
-	extract, err := w.Content.GetExtract(id)
+	extract, langCodeA, langCodeB, err := w.readExtractAndLanguages(context)
 	if err != nil {
 		return nil, err
-	}
-
-	langCodeA, err := w.Language.GetCode(langA)
-	if err != nil {
-		return nil, err
-	}
-
-	var langCodeB language.Code
-	if len(langB) != 0 {
-		langCodeB, err = w.Language.GetCode(langB)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if fByTypeA, ok := extract.Flavors[langCodeA]; ok {
@@ -46,4 +26,27 @@ func (w *Worker) EditText(context *frontend.Context) ([]byte, error) {
 		}
 	}
 	return nil, content.ErrInvalidInput
+}
+
+func (w *Worker) readExtractAndLanguages(context *frontend.Context) (extract *content.Extract, langCodeA, langCodeB language.Code, err error) {
+	extract, err = w.readExtract(context)
+	if err != nil {
+		return
+	}
+
+	langA := context.Query.Get("a")
+	langB := context.Query.Get("b")
+
+	langCodeA, err = w.Language.GetCode(langA)
+	if err != nil {
+		return
+	}
+
+	if len(langB) != 0 {
+		langCodeB, err = w.Language.GetCode(langB)
+		if err != nil {
+			return
+		}
+	}
+	return
 }

@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"net/url"
 	"strings"
 
 	"github.com/polyglottis/platform/frontend"
@@ -33,9 +32,7 @@ func (w *Worker) SignIn(context *frontend.Context, session *Session) ([]byte, er
 	if err == user.AccountNotFound || !password.Check(args.Password, a) {
 		sleep()
 		session.SaveFlashError("Incorrect username or password.")
-		defaults := url.Values{}
-		defaults.Set("User", args.User)
-		session.SaveDefaults(defaults)
+		session.SaveDefault("User", args.User)
 		return nil, redirectToOther(context.Url)
 	}
 

@@ -21,6 +21,9 @@ func (c *Client) GetCode(code string) (language.Code, error) {
 	reply := new(language.Code)
 	err := c.c.Call("LanguageServer.GetCode", code, reply)
 	if err != nil {
+		if err.Error() == language.CodeNotFound.Error() {
+			return language.Unknown.Code, language.CodeNotFound
+		}
 		return language.Unknown.Code, err
 	}
 	return *reply, nil

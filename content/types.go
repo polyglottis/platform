@@ -4,10 +4,8 @@ package content
 
 import (
 	"errors"
-	"regexp"
 	"time"
 
-	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 )
@@ -67,31 +65,11 @@ var AllExtractTypes = []ExtractType{
 	Song,
 }
 
-func ValidExtractType(t ExtractType) bool {
-	for _, candidate := range []ExtractType{
-		Article,
-		Dialog,
-		ShortStory,
-		Poem,
-		Song,
-		WordList,
-	} {
-		if t == candidate {
-			return true
-		}
-	}
-	return false
-}
-
 const (
 	Audio      FlavorType = "AUDIO"
 	Text       FlavorType = "TEXT"
 	Transcript FlavorType = "TRANSCRIPT"
 )
-
-func ValidFlavorType(t FlavorType) bool {
-	return t == Audio || t == Text || t == Transcript
-}
 
 const (
 	TypeText ContentType = "text"
@@ -142,7 +120,7 @@ type Flavor struct {
 	Type            FlavorType // text, audio, ...
 	Language        language.Code
 	LanguageComment string
-	Blocks          BlockSlice
+	Blocks          BlockSlice `json:",omitempty"`
 }
 
 type BlockSlice []UnitSlice
@@ -156,20 +134,6 @@ type Extract struct {
 	UrlSlug  string
 	Metadata *Metadata `json:",omitempty"`
 	Flavors  FlavorMap `json:",omitempty"`
-}
-
-var validSlug = regexp.MustCompile(`^[A-Za-z0-9_]*$`)
-
-// ValidSlug returns true if slug has at least 5 characters and matches ^[A-Za-z0-9_]*$.
-// Otherwise an (error) message is returned.
-func ValidSlug(slug string) (bool, i18n.Key) {
-	if len(slug) < 5 {
-		return false, "Slug too short."
-	}
-	if !validSlug.MatchString(slug) {
-		return false, "Only unaccented letters, numbers and underscores are allowed."
-	}
-	return true, ""
 }
 
 type FlavorMap map[language.Code]FlavorByType

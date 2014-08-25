@@ -18,6 +18,7 @@ type Server interface {
 	Flavor(context *Context, e *content.Extract, a, b *FlavorTriple) ([]byte, error)
 
 	NewExtract(context *Context) ([]byte, error)
+	NewFlavor(context *Context, e *content.Extract) ([]byte, error)
 	EditText(context *Context, e *content.Extract, a, b *content.Flavor) ([]byte, error)
 
 	SignUp(context *Context) ([]byte, error)

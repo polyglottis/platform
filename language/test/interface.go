@@ -27,6 +27,9 @@ func Invalid(server language.Server) error {
 	if code != language.Unknown.Code {
 		return fmt.Errorf("GetCode('%s') should return language Unknown", invalid)
 	}
+	if err != language.CodeNotFound {
+		return fmt.Errorf("GetCode('%s') should return language.CodeNotFound but returned %v", invalid, err)
+	}
 	return nil
 }
 

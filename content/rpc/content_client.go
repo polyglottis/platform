@@ -62,7 +62,7 @@ func (c *Client) GetExtract(id content.ExtractId) (*content.Extract, error) {
 	e := new(content.Extract)
 	err := c.rpc.Call("ContentServer.GetExtract", id, e)
 	if err != nil {
-		if err.Error() == "Not found" {
+		if err.Error() == content.ErrNotFound.Error() {
 			return nil, content.ErrNotFound
 		}
 		return nil, err
@@ -74,7 +74,7 @@ func (c *Client) GetExtractId(slug string) (content.ExtractId, error) {
 	var id content.ExtractId
 	err := c.rpc.Call("ContentServer.GetExtractId", slug, &id)
 	if err != nil {
-		if err.Error() == "Not found" {
+		if err.Error() == content.ErrNotFound.Error() {
 			return "", content.ErrNotFound
 		}
 		return "", err

@@ -38,7 +38,11 @@ func (w *Router) RegisterRoutes(r *mux.Router) {
 
 	r.HandleFunc("/extract/edit/new", w.contextHandler(w.Server.NewExtract)).Methods("GET")
 	r.HandleFunc("/extract/edit/new", w.contextHandlerForm(w.NewExtract)).Methods("POST")
-	r.HandleFunc("/extract/edit/text", w.contextHandler(w.EditText))
+	r.HandleFunc("/extract/edit/new_flavor/{slug}",
+		w.contextHandler(w.NewFlavor)).Methods("GET")
+	r.HandleFunc("/extract/edit/new_flavor/{slug}",
+		w.contextHandlerForm(w.NewFlavorPOST)).Methods("POST")
+	r.HandleFunc("/extract/edit/text/{slug}", w.contextHandler(w.EditText))
 
 	r.HandleFunc("/extract/{slug}", w.contextHandler(w.Extract))
 	r.HandleFunc("/extract/{slug}/{language}", w.contextHandler(w.Flavor))

@@ -4,7 +4,6 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
@@ -31,8 +30,8 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	errors := make(frontend.ErrorMap)
 	defaults := url.Values{}
 
-	if len(context.User) == 0 {
-		errors["FORM"] = i18n.Key("You must be logged in to perform this action.")
+	if !context.LoggedIn() {
+		errors["FORM"] = i18n.Key("You must sign in to perform this action.")
 	}
 
 	args := new(newExtractArgs)
@@ -55,25 +54,21 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 
 	if !content.ValidExtractType(content.ExtractType(args.ExtractType)) {
 		defaults.Set("ExtractType", "")
-		errors["ExtractType"] = i18n.Key("Please select one option.")
+		errors["ExtractType"] = i18n.Key("Please select an option.")
 	}
 
 	langCode, err := w.Language.GetCode(args.Language)
 	if err != nil {
 		defaults.Set("Language", "")
-		errors["Language"] = i18n.Key("Please select one option.")
+		errors["Language"] = i18n.Key("Please select an option.")
 	}
 
 	if len(args.Title) == 0 {
 		errors["Title"] = i18n.Key("Please enter a title.")
 	}
 
-	summaryLength := utf8.RuneCountInString(args.Summary)
-	if summaryLength < 10 {
-		errors["Summary"] = i18n.Key("Please enter a longer summary.")
-	}
-	if summaryLength > 150 {
-		errors["Summary"] = i18n.Key("This summary is too long (maximum 150 characters).")
+	if valid, msg := content.ValidSummary(args.Summary); !valid {
+		errors["Summary"] = msg
 	}
 
 	if len(args.Text) == 0 {

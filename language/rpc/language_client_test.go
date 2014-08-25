@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/polyglottis/platform/language"
@@ -14,7 +13,7 @@ func (s *server) GetCode(code string) (language.Code, error) {
 	if code == "en" {
 		return language.English.Code, nil
 	} else {
-		return "", fmt.Errorf("Only 'en' is supported")
+		return "", language.CodeNotFound
 	}
 }
 

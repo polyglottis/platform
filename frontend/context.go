@@ -28,3 +28,7 @@ type ErrorMap map[string]i18n.Key
 func (c *Context) ProtocolAndHost() string {
 	return c.Protocol + "://" + c.Host
 }
+
+func (c *Context) LoggedIn() bool {
+	return len(c.User) != 0
+}

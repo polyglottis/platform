@@ -53,6 +53,13 @@ func (c *Client) Flavor(context *frontend.Context, extract *content.Extract, a, 
 func (c *Client) NewExtract(context *frontend.Context) ([]byte, error) {
 	return c.call("NewExtract", context)
 }
+func (c *Client) NewFlavor(context *frontend.Context, extract *content.Extract) (response []byte, err error) {
+	err = c.rpc.Call("FrontendServer.NewFlavor", &ContextExtract{
+		Context: context,
+		Extract: extract,
+	}, &response)
+	return
+}
 func (c *Client) EditText(context *frontend.Context, extract *content.Extract, a, b *content.Flavor) (response []byte, err error) {
 	err = c.rpc.Call("FrontendServer.EditText", &ContextFlavors{
 		Context: context,

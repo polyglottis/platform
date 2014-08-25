@@ -72,6 +72,10 @@ type ContextFlavors struct {
 	A       *content.Flavor
 	B       *content.Flavor
 }
+type ContextExtract struct {
+	Context *frontend.Context
+	Extract *content.Extract
+}
 
 func (s *FrontendServer) Flavor(cf *ContextFlavorTriples, r *[]byte) (err error) {
 	*r, err = s.s.Flavor(cf.Context, cf.Extract, cf.A, cf.B)
@@ -80,6 +84,10 @@ func (s *FrontendServer) Flavor(cf *ContextFlavorTriples, r *[]byte) (err error)
 
 func (s *FrontendServer) NewExtract(context *frontend.Context, r *[]byte) (err error) {
 	*r, err = s.s.NewExtract(context)
+	return
+}
+func (s *FrontendServer) NewFlavor(ce *ContextExtract, r *[]byte) (err error) {
+	*r, err = s.s.NewFlavor(ce.Context, ce.Extract)
 	return
 }
 func (s *FrontendServer) EditText(cf *ContextFlavors, r *[]byte) (err error) {
