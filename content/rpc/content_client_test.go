@@ -19,7 +19,7 @@ type server struct {
 }
 
 func (s *server) NewExtract(author user.Name, e *content.Extract) error {
-	if !content.ValidSlug(e.UrlSlug) || !content.ValidExtractType(e.Type) {
+	if valid, _ := content.ValidSlug(e.UrlSlug); !valid || !content.ValidExtractType(e.Type) {
 		return content.ErrInvalidInput
 	}
 

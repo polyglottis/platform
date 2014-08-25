@@ -61,7 +61,16 @@ func (w *Worker) Flavor(context *Context) ([]byte, error) {
 
 	if fByType, ok := extract.Flavors[langCode]; ok {
 		a := newFlavorTriple(fByType)
-		return w.Server.Flavor(context, extract, a, &FlavorTriple{})
+
+		b := &FlavorTriple{}
+		langB := context.Query.Get("b")
+		langCodeB, err := w.Language.GetCode(langB)
+		if err == nil {
+			if fByTypeB, ok := extract.Flavors[langCodeB]; ok {
+				b = newFlavorTriple(fByTypeB)
+			}
+		}
+		return w.Server.Flavor(context, extract, a, b)
 	}
 	// flavor not found, fall back to extract
 	return w.extract(context, extract)
