@@ -19,9 +19,11 @@ type Context struct {
 
 	Email string // for password reset
 
-	Defaults url.Values          // default form values
-	Errors   map[string]i18n.Key // errors on form submit
+	Defaults url.Values // default form values
+	Errors   ErrorMap   // errors on form submit
 }
+
+type ErrorMap map[string]i18n.Key
 
 func (c *Context) ProtocolAndHost() string {
 	return c.Protocol + "://" + c.Host

@@ -14,23 +14,20 @@ func (w *Worker) checkToken(context *frontend.Context) (bool, error) {
 	return w.User.ValidToken(user.Name(u), token)
 }
 
-func (w *Worker) GetResetPassword(context *frontend.Context) ([]byte, error) {
+func (w *Worker) GetResetPassword(context *frontend.Context, session *Session) ([]byte, error) {
 	valid, err := w.checkToken(context)
 	if err != nil {
 		return nil, err
 	}
 	if !valid {
-		return w.linkExpired(context)
+		return w.linkExpired(session)
 	}
 	return w.Server.ResetPassword(context)
 }
 
-func (w *Worker) linkExpired(context *frontend.Context) ([]byte, error) {
-	// TODO this is useless: we need to store the error in the flash messages
-	context.Errors = map[string]i18n.Key{
-		"FORM": i18n.Key("This link has expired. Please enter your email again."),
-	}
+func (w *Worker) linkExpired(session *Session) ([]byte, error) {
 	sleep()
+	session.SaveFlashError("This link has expired. Please enter your email again.")
 	return nil, redirectToOther("/user/forgot_password")
 }
 
@@ -49,7 +46,7 @@ func (w *Worker) ResetPassword(context *frontend.Context, session *Session) ([]b
 		return nil, err
 	}
 	if err == user.AccountNotFound || !valid {
-		return w.linkExpired(context)
+		return w.linkExpired(session)
 	}
 
 	args := new(resetPasswordArgs)
@@ -58,7 +55,7 @@ func (w *Worker) ResetPassword(context *frontend.Context, session *Session) ([]b
 		return nil, err
 	}
 
-	errors := make(map[string]i18n.Key)
+	errors := make(frontend.ErrorMap)
 	if valid, msg := user.ValidPassword(args.Password); valid {
 		if args.Password != args.PasswordConfirm {
 			errors["Password"] = i18n.Key("Password doesn't match the confirmation")
@@ -68,8 +65,8 @@ func (w *Worker) ResetPassword(context *frontend.Context, session *Session) ([]b
 	}
 
 	if len(errors) != 0 {
-		context.Errors = errors
-		return w.Server.ResetPassword(context)
+		session.SaveFlashErrors(errors)
+		return nil, redirectToOther(context.Url)
 	}
 
 	hash, err := password.Hash(args.Password)

@@ -30,7 +30,7 @@ func (w *Worker) SignUp(context *frontend.Context, session *Session) ([]byte, er
 	}
 	args.CleanUp()
 
-	errors := make(map[string]i18n.Key)
+	errors := make(frontend.ErrorMap)
 
 	if valid, msg := user.ValidName(args.User); valid {
 		_, err = w.User.GetAccount(user.Name(args.User))
@@ -57,11 +57,11 @@ func (w *Worker) SignUp(context *frontend.Context, session *Session) ([]byte, er
 	}
 
 	if len(errors) != 0 {
-		context.Errors = errors
 		context.Defaults = url.Values{}
 		context.Defaults.Set("User", args.User)
 		context.Defaults.Set("Email", args.Email)
-		return w.Server.SignUp(context)
+		session.SaveFlashErrors(errors)
+		return nil, redirectToOther(context.Url)
 	}
 
 	hash, err := password.Hash(args.Password)

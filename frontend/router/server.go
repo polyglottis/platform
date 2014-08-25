@@ -33,7 +33,7 @@ func (w *Router) RegisterRoutes(r *mux.Router) {
 
 	r.HandleFunc("/user/forgot_password", w.contextHandler(w.Server.ForgotPassword)).Methods("GET")
 	r.HandleFunc("/user/forgot_password", w.contextHandlerForm(w.ForgotPassword)).Methods("POST")
-	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandler(w.GetResetPassword)).Methods("GET")
+	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandlerSession(w.GetResetPassword)).Methods("GET")
 	r.HandleFunc("/user/reset_password/{user}/{token}", w.contextHandlerForm(w.ResetPassword)).Methods("POST")
 
 	r.HandleFunc("/extract/edit/new", w.contextHandler(w.Server.NewExtract)).Methods("GET")
@@ -49,6 +49,10 @@ func (w *Router) RegisterRoutes(r *mux.Router) {
 
 func (w *Router) contextHandler(f func(*frontend.Context) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
 	return w.contextHandlerCode(http.StatusOK, f)
+}
+
+func (w *Router) contextHandlerSession(f func(*frontend.Context, *handle.Session) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
+	return w.contextHandlerFull(http.StatusOK, f, false)
 }
 
 func (w *Router) contextHandlerForm(f func(*frontend.Context, *handle.Session) ([]byte, error)) func(http.ResponseWriter, *http.Request) {
@@ -68,7 +72,7 @@ func (worker *Router) contextHandlerFull(code int, f func(*frontend.Context, *ha
 		}()
 		var err error
 		var context *frontend.Context
-		session := readSession(r, w)
+		session := handle.NewSession(r, w)
 		if hasForm {
 			context, err = ReadContextWithForm(r, session)
 		} else {
@@ -119,7 +123,7 @@ func (w *Router) do(job *job) {
 			if job.secondTry {
 				server.InternalError(job.R, job.W, err)
 			} else {
-				log.Println("Frontend server error:", err)
+				log.Printf("Internal Server Error while serving %s: %v", job.Context.Url, err)
 				job.Code = http.StatusInternalServerError
 				job.F = forgetSession(w.Server.Error)
 				job.secondTry = true

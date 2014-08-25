@@ -1,4 +1,4 @@
-package router
+package handle
 
 import (
 	"encoding/gob"
@@ -14,12 +14,13 @@ import (
 	"github.com/gorilla/sessions"
 
 	"github.com/polyglottis/platform/config"
-	"github.com/polyglottis/platform/frontend/handle"
+	"github.com/polyglottis/platform/frontend"
 	"github.com/polyglottis/platform/user"
 )
 
 func init() {
 	gob.Register(&user.Account{})
+	gob.Register(frontend.ErrorMap{})
 
 	keyFile := config.Get().SessionKeyPath
 	var keyPairs []*keyPair
@@ -80,7 +81,7 @@ func newKeyPair() *keyPair {
 
 var sessionStore *sessions.CookieStore
 
-func readSession(r *http.Request, w http.ResponseWriter) *handle.Session {
+func NewSession(r *http.Request, w http.ResponseWriter) *Session {
 	s, err := sessionStore.Get(r, "user")
 	if err != nil {
 		log.Println("Unable to decode old session:", err)
@@ -89,5 +90,5 @@ func readSession(r *http.Request, w http.ResponseWriter) *handle.Session {
 			log.Println("Unable to create new session: is there a problem with the session keys file?", err)
 		}
 	}
-	return handle.NewSession(s, r, w)
+	return newSession(s, r, w)
 }

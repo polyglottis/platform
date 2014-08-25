@@ -5,7 +5,6 @@ import (
 
 	"github.com/polyglottis/platform/config"
 	"github.com/polyglottis/platform/frontend"
-	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 )
 
@@ -27,11 +26,9 @@ func (w *Worker) ForgotPassword(context *frontend.Context, session *Session) ([]
 
 	a, err := w.User.GetAccountByEmail(args.Email)
 	if err == user.AccountNotFound {
-		context.Errors = map[string]i18n.Key{
-			"FORM": i18n.Key("Sorry, we could not find this email."),
-		}
 		sleep()
-		return w.Server.ForgotPassword(context)
+		session.SaveFlashError("Sorry, we could not find this email.")
+		return nil, redirectToOther("/user/forgot_password")
 	} else if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,4 @@
+// Package handle contains frontend handler functions.
 package handle
 
 import (

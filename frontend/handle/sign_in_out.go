@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/polyglottis/platform/frontend"
-	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/platform/user/password"
 )
@@ -32,13 +31,11 @@ func (w *Worker) SignIn(context *frontend.Context, session *Session) ([]byte, er
 		return nil, err
 	}
 	if err == user.AccountNotFound || !password.Check(args.Password, a) {
-		context.Errors = map[string]i18n.Key{
-			"FORM": i18n.Key("Incorrect username or password."),
-		}
+		sleep()
+		session.SaveFlashError("Incorrect username or password.")
 		context.Defaults = url.Values{}
 		context.Defaults.Set("User", args.User)
-		sleep()
-		return w.Server.SignIn(context)
+		return nil, redirectToOther(context.Url)
 	}
 
 	session.SetAccount(a)

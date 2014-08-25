@@ -28,7 +28,7 @@ func (a *newExtractArgs) CleanUp() {
 }
 
 func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte, error) {
-	errors := make(map[string]i18n.Key)
+	errors := make(frontend.ErrorMap)
 	context.Defaults = url.Values{}
 
 	if len(context.User) == 0 {
@@ -42,7 +42,14 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	}
 	args.CleanUp()
 
-	if valid, msg := content.ValidSlug(args.Slug); !valid {
+	if valid, msg := content.ValidSlug(args.Slug); valid {
+		_, err = w.Content.GetExtractId(args.Slug)
+		if err == nil {
+			errors["Slug"] = i18n.Key("This url slug is already taken")
+		} else if err != content.ErrNotFound {
+			return nil, err
+		}
+	} else {
 		errors["Slug"] = msg
 	}
 
@@ -74,12 +81,12 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	}
 
 	if len(errors) != 0 {
-		context.Errors = errors
+		session.SaveFlashErrors(errors)
 		context.Defaults.Set("Slug", args.Slug)
 		context.Defaults.Set("Title", args.Title)
 		context.Defaults.Set("Summary", args.Summary)
 		context.Defaults.Set("Text", args.Text)
-		return w.Server.NewExtract(context)
+		return nil, redirectToOther(context.Url)
 	}
 
 	e := &content.Extract{

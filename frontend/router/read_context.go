@@ -16,6 +16,7 @@ func ReadContext(r *http.Request, s *handle.Session) (*frontend.Context, error) 
 		Query:  r.URL.Query(),
 		Url:    r.URL.String(),
 		Host:   r.Host,
+		Errors: s.ReadFlashErrors(),
 	}
 
 	if r.TLS == nil {
