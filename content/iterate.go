@@ -8,6 +8,22 @@ func (s ExtractShape) IterateFlavorBody(f *Flavor, beforeBlock func(BlockId), un
 		s.IterateBody(f.Blocks, beforeBlock, unit, afterBlock)
 	}
 }
+func (s ExtractShape) IterateFlavorBodies(fA, fB *Flavor, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit, *Unit), afterBlock func(BlockId)) {
+	var blocksA, blocksB BlockSlice
+	if fA != nil {
+		blocksA = fA.Blocks
+	}
+	if fB != nil {
+		blocksB = fB.Blocks
+	}
+	if len(blocksA) != 0 && blocksA[0][0].BlockId == 1 {
+		blocksA = blocksA[1:]
+	}
+	if len(blocksB) != 0 && blocksB[0][0].BlockId == 1 {
+		blocksB = blocksB[1:]
+	}
+	s.IterateBodies(blocksA, blocksB, beforeBlock, unit, afterBlock)
+}
 
 func (s ExtractShape) IterateBody(body BlockSlice, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit), afterBlock func(BlockId)) {
 	nextBlockIdx := 0
@@ -42,6 +58,53 @@ func (s ExtractShape) IterateBody(body BlockSlice, beforeBlock func(BlockId), un
 		}
 	}
 }
+func (s ExtractShape) IterateBodies(bodyA, bodyB BlockSlice, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit, *Unit), afterBlock func(BlockId)) {
+	nextBlockIdxA, nextBlockIdxB := 0, 0
+	var nextBlockA, nextBlockB UnitSlice
+	if nextBlockIdxA < len(bodyA) {
+		nextBlockA = bodyA[nextBlockIdxA]
+	}
+	if nextBlockIdxB < len(bodyB) {
+		nextBlockB = bodyB[nextBlockIdxB]
+	}
+	for i, size := range s {
+		blockId := BlockId(i + 2)
+		if beforeBlock != nil {
+			beforeBlock(blockId)
+		}
+		var curBlockA, curBlockB UnitSlice
+		if nextBlockA != nil && nextBlockA[0].BlockId == blockId {
+			curBlockA = nextBlockA
+			nextBlockIdxA++
+			if nextBlockIdxA < len(bodyA) {
+				nextBlockA = bodyA[nextBlockIdxA]
+			} else {
+				nextBlockA = nil
+			}
+		}
+		if nextBlockB != nil && nextBlockB[0].BlockId == blockId {
+			curBlockB = nextBlockB
+			nextBlockIdxB++
+			if nextBlockIdxB < len(bodyB) {
+				nextBlockB = bodyB[nextBlockIdxB]
+			} else {
+				nextBlockB = nil
+			}
+		}
+		if unit != nil {
+			if curBlockA == nil && curBlockB == nil {
+				for j := 0; j < size; j++ {
+					unit(blockId, UnitId(j+1), nil, nil)
+				}
+			} else {
+				s.iterateUnitsAB(size, blockId, curBlockA, curBlockB, unit)
+			}
+		}
+		if afterBlock != nil {
+			afterBlock(blockId)
+		}
+	}
+}
 
 func (s ExtractShape) iterateUnits(size int, blockId BlockId, units UnitSlice, f func(BlockId, UnitId, *Unit)) {
 	nextUnitIdx := 0
@@ -62,6 +125,40 @@ func (s ExtractShape) iterateUnits(size int, blockId BlockId, units UnitSlice, f
 		} else {
 			f(blockId, unitId, nil)
 		}
+	}
+}
+
+func (s ExtractShape) iterateUnitsAB(size int, blockId BlockId, unitsA, unitsB UnitSlice, f func(BlockId, UnitId, *Unit, *Unit)) {
+	nextUnitIdxA, nextUnitIdxB := 0, 0
+	var nextUnitA, nextUnitB *Unit
+	if nextUnitIdxA < len(unitsA) {
+		nextUnitA = unitsA[nextUnitIdxA]
+	}
+	if nextUnitIdxB < len(unitsB) {
+		nextUnitB = unitsB[nextUnitIdxB]
+	}
+	for i := 0; i < size; i++ {
+		unitId := UnitId(i + 1)
+		var curUnitA, curUnitB *Unit
+		if nextUnitA != nil && nextUnitA.Id == unitId {
+			curUnitA = nextUnitA
+			nextUnitIdxA++
+			if nextUnitIdxA < len(unitsA) {
+				nextUnitA = unitsA[nextUnitIdxA]
+			} else {
+				nextUnitA = nil
+			}
+		}
+		if nextUnitB != nil && nextUnitB.Id == unitId {
+			curUnitB = nextUnitB
+			nextUnitIdxB++
+			if nextUnitIdxB < len(unitsB) {
+				nextUnitB = unitsB[nextUnitIdxB]
+			} else {
+				nextUnitB = nil
+			}
+		}
+		f(blockId, unitId, curUnitA, curUnitB)
 	}
 }
 

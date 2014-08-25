@@ -53,7 +53,7 @@ func (w *Worker) NewFlavorPOST(context *frontend.Context, session *Session) ([]b
 	var otherFlavor *content.Flavor
 	if fByType, ok := e.Flavors[langCode]; ok {
 		if flavors, ok := fByType[content.Text]; ok {
-			if len(flavors) > 1 {
+			if len(flavors) > 0 {
 				// MainComment only necessary if there are already other flavors.
 				if valid, msg := content.ValidLanguageComment(args.MainComment); valid {
 					mainComment = args.MainComment

@@ -67,6 +67,83 @@ func TestIterateFlavorBody(t *testing.T) {
 	}
 }
 
+func TestIterateFlavorBodies(t *testing.T) {
+	s := ExtractShape{3, 3, 2}
+	fA := &Flavor{
+		Blocks: BlockSlice{
+			UnitSlice{{
+				BlockId: 1,
+				Id:      1,
+				Content: "Title",
+			}},
+			UnitSlice{{
+				BlockId: 3,
+				Id:      2,
+				Content: "testA",
+			}},
+		},
+	}
+	fB := &Flavor{
+		Blocks: BlockSlice{
+			UnitSlice{{
+				BlockId: 2,
+				Id:      3,
+				Content: "testB",
+			}},
+		},
+	}
+
+	expected := []string{
+		"\n  1 - block-2",
+		"\n  2 - unit-2,1:missing,missing",
+		"\n  3 - unit-2,2:missing,missing",
+		"\n  4 - unit-2,3:missing,testB",
+		"\n  5 - endblock-2",
+		"\n  6 - block-3",
+		"\n  7 - unit-3,1:missing,missing",
+		"\n  8 - unit-3,2:testA,missing",
+		"\n  9 - unit-3,3:missing,missing",
+		"\n 10 - endblock-3",
+		"\n 11 - block-4",
+		"\n 12 - unit-4,1:missing,missing",
+		"\n 13 - unit-4,2:missing,missing",
+		"\n 14 - endblock-4",
+	}
+	actual := []string{}
+	i := 1
+	s.IterateFlavorBodies(fA, fB, func(b BlockId) {
+		actual = append(actual, fmt.Sprintf("\n%3d - block-%d", i, int(b)))
+		i++
+	}, func(b BlockId, uid UnitId, uA, uB *Unit) {
+		var msg string
+		if uA == nil {
+			msg = "missing"
+		} else {
+			msg = uA.Content
+		}
+		if uB == nil {
+			msg += ",missing"
+		} else {
+			msg += "," + uB.Content
+		}
+		actual = append(actual, fmt.Sprintf("\n%3d - unit-%d,%d:%s", i, int(b), int(uid), msg))
+		i++
+	}, func(b BlockId) {
+		actual = append(actual, fmt.Sprintf("\n%3d - endblock-%d", i, int(b)))
+		i++
+	})
+
+	if len(expected) != len(actual) {
+		t.Fatalf("Expected %v but got %v", expected, actual)
+	}
+
+	for i, str := range expected {
+		if str != actual[i] {
+			t.Fatalf("Expected %v but got %v", str, actual[i])
+		}
+	}
+}
+
 func TestUnion(t *testing.T) {
 	f := &Flavor{
 		Blocks: BlockSlice{

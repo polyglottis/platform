@@ -1,7 +1,7 @@
 package handle
 
 import (
-	"log"
+	"strconv"
 
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
@@ -16,12 +16,7 @@ func (w *Worker) Extract(context *frontend.Context) ([]byte, error) {
 }
 
 func (w *Worker) extract(context *frontend.Context, extract *content.Extract) ([]byte, error) {
-	for _, fByType := range extract.Flavors { // not great: not even deterministic...
-		a := newFlavorTriple(fByType)
-		return w.Server.Flavor(context, extract, a, &frontend.FlavorTriple{})
-	}
-	log.Println("Weird: extract with no flavor:", extract.Id)
-	return nil, content.ErrNotFound
+	return w.Server.Flavor(context, extract, nil, nil)
 }
 
 func (w *Worker) Flavor(context *frontend.Context) ([]byte, error) {
@@ -37,14 +32,14 @@ func (w *Worker) Flavor(context *frontend.Context) ([]byte, error) {
 	}
 
 	if fByType, ok := extract.Flavors[langCode]; ok {
-		a := newFlavorTriple(fByType)
+		a := newFlavorTriple(fByType, context, "a")
 
 		b := &frontend.FlavorTriple{}
 		langB := context.Query.Get("b")
 		langCodeB, err := w.Language.GetCode(langB)
 		if err == nil {
 			if fByTypeB, ok := extract.Flavors[langCodeB]; ok {
-				b = newFlavorTriple(fByTypeB)
+				b = newFlavorTriple(fByTypeB, context, "b")
 			}
 		}
 		return w.Server.Flavor(context, extract, a, b)
@@ -53,16 +48,38 @@ func (w *Worker) Flavor(context *frontend.Context) ([]byte, error) {
 	return w.extract(context, extract)
 }
 
-func newFlavorTriple(fByType content.FlavorByType) *frontend.FlavorTriple {
+func newFlavorTriple(fByType content.FlavorByType, context *frontend.Context, which string) *frontend.FlavorTriple {
 	a := &frontend.FlavorTriple{}
-	if audio, ok := fByType[content.Audio]; ok {
-		a.Audio = audio[0]
-	}
-	if text, ok := fByType[content.Text]; ok {
-		a.Text = text[0]
-	}
-	if transcript, ok := fByType[content.Transcript]; ok {
-		a.Transcript = transcript[0]
+	for _, data := range []struct {
+		flavors        []*content.Flavor
+		key            string
+		insertionPoint **content.Flavor
+	}{{
+		flavors:        fByType[content.Audio],
+		key:            which + "a",
+		insertionPoint: &a.Audio,
+	}, {
+		flavors:        fByType[content.Text],
+		key:            which + "t",
+		insertionPoint: &a.Text,
+	}, {
+		flavors:        fByType[content.Transcript],
+		key:            which + "p",
+		insertionPoint: &a.Transcript,
+	}} {
+		if len(data.flavors) != 0 {
+			idx := 0
+			if want, err := strconv.Atoi(context.Query.Get(data.key)); err == nil {
+				flavorId := content.FlavorId(want)
+				for i, f := range data.flavors {
+					if f.Id == flavorId {
+						idx = i
+						break
+					}
+				}
+			}
+			*data.insertionPoint = data.flavors[idx]
+		}
 	}
 	return a
 }
