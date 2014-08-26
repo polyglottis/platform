@@ -16,6 +16,7 @@ type Server interface {
 
 	// Read
 	GetExtractId(slug string) (ExtractId, error)
+	ExtractsMatching(q *Query) ([]ExtractId, error)
 }
 
 type BasicServer interface {
@@ -191,3 +192,9 @@ type Note struct {
 }
 
 type ExtractShape []int
+
+type Query struct {
+	LanguageA   language.Code
+	LanguageB   language.Code
+	ExtractType ExtractType
+}

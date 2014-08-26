@@ -64,6 +64,11 @@ func (s *ContentServer) ExtractLanguages(nothing bool, list *[]language.Code) (e
 	return
 }
 
+func (s *ContentServer) ExtractsMatching(q *content.Query, list *[]content.ExtractId) (err error) {
+	*list, err = s.s.ExtractsMatching(q)
+	return
+}
+
 func (s *ContentServer) GetExtract(id content.ExtractId, e *content.Extract) error {
 	extract, err := s.s.GetExtract(id)
 	if err != nil {

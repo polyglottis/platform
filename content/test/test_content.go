@@ -90,6 +90,30 @@ func (t *Tester) All() {
 		log.Print("Get extract id")
 		t.GetExtractId(Extract.UrlSlug, Extract.Id)
 		t.GetExtractIdFails("no such slug")
+
+		t.ExtractsMatching(&content.Query{
+			LanguageA: language.English.Code,
+		}, []content.ExtractId{id})
+
+		t.ExtractsMatching(&content.Query{
+			LanguageB: language.English.Code,
+		}, []content.ExtractId{id})
+
+		t.ExtractsMatching(&content.Query{
+			ExtractType: content.Dialog,
+		}, []content.ExtractId{id})
+
+		t.ExtractsMatching(&content.Query{
+			LanguageA:   language.English.Code,
+			ExtractType: content.Dialog,
+		}, []content.ExtractId{id})
+
+		t.ExtractsMatching(&content.Query{
+			LanguageA: language.Unknown.Code,
+		}, nil)
+		t.ExtractsMatching(&content.Query{
+			ExtractType: content.Poem,
+		}, nil)
 	}
 
 	log.Print("New flavor")
@@ -106,6 +130,17 @@ func (t *Tester) All() {
 	}
 	t.Get(Extract.Id, Extract)
 	t.ExtractLanguages([]language.Code{language.English.Code, german})
+	if t.server != nil {
+		t.ExtractsMatching(&content.Query{
+			LanguageA:   language.English.Code,
+			LanguageB:   german,
+			ExtractType: content.Dialog,
+		}, []content.ExtractId{id})
+		t.ExtractsMatching(&content.Query{
+			LanguageA: language.English.Code,
+			LanguageB: language.Unknown.Code,
+		}, []content.ExtractId{})
+	}
 
 	log.Print("Assert new flavor fails")
 	t.NewFlavorFails(Author, &content.Flavor{ExtractId: Extract.Id, Language: language.English.Code})
@@ -347,6 +382,25 @@ func (t *Tester) GetExtractIdFails(nonslug string) {
 	_, err := t.server.GetExtractId(nonslug)
 	if err != content.ErrNotFound {
 		t.Fatal("Expecting a not found error.")
+	}
+}
+
+func (t *Tester) ExtractsMatching(q *content.Query, expected []content.ExtractId) {
+	actual, err := t.server.ExtractsMatching(q)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(actual) != len(expected) {
+		t.Errorf("Expecting %v but got %v results", len(expected), len(actual))
+		return
+	}
+
+	// TODO sort
+	for i, id := range expected {
+		if id != actual[i] {
+			t.Errorf("Expecting id %v but got %v.", id, actual[i])
+		}
 	}
 }
 

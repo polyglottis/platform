@@ -98,6 +98,29 @@ func (s *server) GetExtractId(slug string) (content.ExtractId, error) {
 	return "", content.ErrNotFound
 }
 
+func (s *server) ExtractsMatching(q *content.Query) ([]content.ExtractId, error) {
+	matching := make([]content.ExtractId, 0)
+	for id, e := range s.extracts {
+		if q.LanguageA != "" {
+			if _, ok := e.Flavors[q.LanguageA]; !ok {
+				continue
+			}
+		}
+		if q.LanguageB != "" {
+			if _, ok := e.Flavors[q.LanguageB]; !ok {
+				continue
+			}
+		}
+		if q.ExtractType != "" {
+			if e.Type != q.ExtractType {
+				continue
+			}
+		}
+		matching = append(matching, id)
+	}
+	return matching, nil
+}
+
 func (s *server) UpdateExtract(author user.Name, e *content.Extract) error {
 	if _, ok := s.extracts[e.Id]; ok {
 		s.extracts[e.Id].Type = e.Type
