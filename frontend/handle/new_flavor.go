@@ -101,8 +101,9 @@ func (w *Worker) NewFlavorPOST(context *frontend.Context, session *Session) ([]b
 	}
 
 	session.ClearDefaults()
-	query := "?a=" + args.Language + "&at=" + strconv.Itoa(int(f.Id))
-	return nil, redirectToOther("/extract/edit/text/" + e.UrlSlug + query)
+	context.Query.Set("a", args.Language)
+	context.Query.Set("at", strconv.Itoa(int(f.Id)))
+	return nil, redirectToOther("/extract/edit/text/" + e.UrlSlug + "?" + context.Query.Encode())
 }
 
 func (w *Worker) NewFlavor(context *frontend.Context) ([]byte, error) {
