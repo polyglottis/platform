@@ -1,8 +1,6 @@
 package handle
 
 import (
-	"strconv"
-
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/frontend"
 )
@@ -45,6 +43,7 @@ func (w *Worker) Flavor(context *frontend.Context) ([]byte, error) {
 		return w.Server.Flavor(context, extract, a, b)
 	}
 	// flavor not found, fall back to extract
+	// TODO offer to create translation in langCode
 	return w.extract(context, extract)
 }
 
@@ -69,8 +68,7 @@ func newFlavorTriple(fByType content.FlavorByType, context *frontend.Context, wh
 	}} {
 		if len(data.flavors) != 0 {
 			idx := 0
-			if want, err := strconv.Atoi(context.Query.Get(data.key)); err == nil {
-				flavorId := content.FlavorId(want)
+			if flavorId, err := context.FlavorId(data.key); err == nil {
 				for i, f := range data.flavors {
 					if f.Id == flavorId {
 						idx = i

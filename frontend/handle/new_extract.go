@@ -63,8 +63,8 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 		errors["Language"] = i18n.Key("Please select an option.")
 	}
 
-	if len(args.Title) == 0 {
-		errors["Title"] = i18n.Key("Please enter a title.")
+	if valid, msg := content.ValidTitle(args.Title); !valid {
+		errors["Title"] = msg
 	}
 
 	if valid, msg := content.ValidSummary(args.Summary); !valid {

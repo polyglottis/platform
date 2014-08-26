@@ -90,14 +90,17 @@ func (t *Tester) All() {
 	}
 
 	log.Print("New flavor")
+	german := language.Code("de")
 	secondFlavor := &content.Flavor{
 		ExtractId: Extract.Id,
 		Type:      content.Audio,
-		Language:  language.English.Code,
+		Language:  german,
 		Summary:   "Second flavor",
 	}
 	t.NewFlavor(Author, secondFlavor)
-	Extract.Flavors[language.English.Code][content.Audio] = []*content.Flavor{secondFlavor}
+	Extract.Flavors[german] = content.FlavorByType{
+		content.Audio: []*content.Flavor{secondFlavor},
+	}
 	t.Get(Extract.Id, Extract)
 
 	log.Print("Assert new flavor fails")
@@ -133,9 +136,32 @@ func (t *Tester) All() {
 		ContentType: content.TypeText,
 		Content:     "Third line.",
 	}
+	t.InsertOrUpdateUnits(Author, []*content.Unit{thirdUnit})
 	blocks := Extract.Flavors[language.English.Code][content.Text][0].Blocks
 	blocks[1] = append(blocks[1], thirdUnit)
-	t.InsertOrUpdateUnits(Author, []*content.Unit{thirdUnit})
+	t.Get(id, Extract)
+
+	germanUnits := []*content.Unit{{
+		ExtractId:   id,
+		Language:    german,
+		FlavorType:  content.Audio,
+		FlavorId:    1,
+		BlockId:     1,
+		Id:          1,
+		ContentType: content.TypeFile,
+		Content:     "title.mp3",
+	}, {
+		ExtractId:   id,
+		Language:    german,
+		FlavorType:  content.Audio,
+		FlavorId:    1,
+		BlockId:     2,
+		Id:          1,
+		ContentType: content.TypeFile,
+		Content:     "first_line.mp3",
+	}}
+	t.InsertOrUpdateUnits(Author, germanUnits)
+	Extract.Flavors[german][content.Audio][0].Blocks = content.BlockSlice{content.UnitSlice(germanUnits)}
 	t.Get(id, Extract)
 
 	log.Print("Update unit")

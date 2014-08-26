@@ -78,7 +78,6 @@ func (s *Session) ReadFlashErrors() frontend.ErrorMap {
 		if len(flashes) > 1 {
 			log.Println("Session with multiple flash messages:", flashes)
 		}
-		log.Println("No flashes...")
 	}
 	return nil
 }
@@ -107,7 +106,7 @@ func (s *Session) GetDefaults() url.Values {
 			return defaults
 		}
 	}
-	return nil
+	return url.Values{}
 }
 
 // ClearDefaults clears the default values for the current form.

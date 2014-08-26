@@ -2,7 +2,9 @@ package frontend
 
 import (
 	"net/url"
+	"strconv"
 
+	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/i18n"
 	"github.com/polyglottis/platform/user"
 )
@@ -31,4 +33,16 @@ func (c *Context) ProtocolAndHost() string {
 
 func (c *Context) LoggedIn() bool {
 	return len(c.User) != 0
+}
+
+func (c *Context) IsFocusOnA() bool {
+	return c.Query.Get("focus") != "b"
+}
+
+func (c *Context) FlavorId(key string) (content.FlavorId, error) {
+	i, err := strconv.Atoi(c.Query.Get(key))
+	if err != nil {
+		return 0, err
+	}
+	return content.FlavorId(i), nil
 }

@@ -42,7 +42,8 @@ func (w *Router) RegisterRoutes(r *mux.Router) {
 		w.contextHandler(w.NewFlavor)).Methods("GET")
 	r.HandleFunc("/extract/edit/new_flavor/{slug}",
 		w.contextHandlerForm(w.NewFlavorPOST)).Methods("POST")
-	r.HandleFunc("/extract/edit/text/{slug}", w.contextHandler(w.EditText))
+	r.HandleFunc("/extract/edit/text/{slug}", w.contextHandler(w.EditText)).Methods("GET")
+	r.HandleFunc("/extract/edit/text/{slug}", w.contextHandlerForm(w.EditTextPOST)).Methods("POST")
 
 	r.HandleFunc("/extract/{slug}", w.contextHandler(w.Extract))
 	r.HandleFunc("/extract/{slug}/{language}", w.contextHandler(w.Flavor))
@@ -127,7 +128,7 @@ func (w *Router) do(job *job) {
 			if job.secondTry {
 				server.InternalError(job.R, job.W, err)
 			} else {
-				log.Printf("Internal Server Error while serving %s: %v", job.Context.Url, err)
+				log.Printf("Internal Server Error while serving %s [%s]: %v", job.Context.Url, job.R.Method, err)
 				job.Code = http.StatusInternalServerError
 				job.F = forgetSession(w.Server.Error)
 				job.secondTry = true

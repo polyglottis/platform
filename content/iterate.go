@@ -1,28 +1,10 @@
 package content
 
 func (s ExtractShape) IterateFlavorBody(f *Flavor, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit), afterBlock func(BlockId)) {
-	if len(f.Blocks) != 0 && f.Blocks[0][0].BlockId == 1 {
-		// skip title
-		s.IterateBody(f.Blocks[1:], beforeBlock, unit, afterBlock)
-	} else {
-		s.IterateBody(f.Blocks, beforeBlock, unit, afterBlock)
-	}
+	s.IterateBody(f.GetBody(), beforeBlock, unit, afterBlock)
 }
 func (s ExtractShape) IterateFlavorBodies(fA, fB *Flavor, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit, *Unit), afterBlock func(BlockId)) {
-	var blocksA, blocksB BlockSlice
-	if fA != nil {
-		blocksA = fA.Blocks
-	}
-	if fB != nil {
-		blocksB = fB.Blocks
-	}
-	if len(blocksA) != 0 && blocksA[0][0].BlockId == 1 {
-		blocksA = blocksA[1:]
-	}
-	if len(blocksB) != 0 && blocksB[0][0].BlockId == 1 {
-		blocksB = blocksB[1:]
-	}
-	s.IterateBodies(blocksA, blocksB, beforeBlock, unit, afterBlock)
+	s.IterateBodies(fA.GetBody(), fB.GetBody(), beforeBlock, unit, afterBlock)
 }
 
 func (s ExtractShape) IterateBody(body BlockSlice, beforeBlock func(BlockId), unit func(BlockId, UnitId, *Unit), afterBlock func(BlockId)) {

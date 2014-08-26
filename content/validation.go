@@ -55,3 +55,10 @@ func ValidSummary(summary string) (bool, i18n.Key) {
 	}
 	return true, ""
 }
+
+func ValidTitle(title string) (bool, i18n.Key) {
+	if title == "" {
+		return false, "Please enter a title."
+	}
+	return true, ""
+}
