@@ -30,3 +30,9 @@ type Server interface {
 }
 
 var CodeNotFound = errors.New("Language code not found")
+
+type CodeSlice []Code
+
+func (s CodeSlice) Len() int           { return len(s) }
+func (s CodeSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s CodeSlice) Less(i, j int) bool { return s[i] < s[j] }

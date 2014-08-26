@@ -7,6 +7,7 @@ import (
 
 	"github.com/polyglottis/platform/content"
 	"github.com/polyglottis/platform/content/test"
+	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rand"
 )
@@ -67,6 +68,16 @@ func (s *server) ExtractList() ([]*content.Extract, error) {
 	list := make([]*content.Extract, 0)
 	for _, e := range s.extracts {
 		list = append(list, e)
+	}
+	return list, nil
+}
+
+func (s *server) ExtractLanguages() ([]language.Code, error) {
+	list := make([]language.Code, 0)
+	for _, e := range s.extracts {
+		for lang := range e.Flavors {
+			list = append(list, lang)
+		}
 	}
 	return list, nil
 }

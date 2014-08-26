@@ -25,6 +25,7 @@ type BasicServer interface {
 
 	// Read
 	ExtractList() ([]*Extract, error)
+	ExtractLanguages() ([]language.Code, error)
 	GetExtract(id ExtractId) (*Extract, error)
 
 	// Update

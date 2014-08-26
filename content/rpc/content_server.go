@@ -4,6 +4,7 @@ package rpc
 
 import (
 	"github.com/polyglottis/platform/content"
+	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/rpc"
 )
@@ -53,13 +54,14 @@ func (s *ContentServer) NewFlavor(r *FlavorRequest, id *content.FlavorId) error 
 	return nil
 }
 
-func (s *ContentServer) ExtractList(nothing bool, list *[]*content.Extract) error {
-	l, err := s.s.ExtractList()
-	if err != nil {
-		return err
-	}
-	*list = l
-	return nil
+func (s *ContentServer) ExtractList(nothing bool, list *[]*content.Extract) (err error) {
+	*list, err = s.s.ExtractList()
+	return
+}
+
+func (s *ContentServer) ExtractLanguages(nothing bool, list *[]language.Code) (err error) {
+	*list, err = s.s.ExtractLanguages()
+	return
 }
 
 func (s *ContentServer) GetExtract(id content.ExtractId, e *content.Extract) error {

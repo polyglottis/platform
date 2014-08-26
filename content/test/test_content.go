@@ -2,6 +2,7 @@ package test
 
 import (
 	"log"
+	"sort"
 	"testing"
 
 	"github.com/polyglottis/platform/content"
@@ -59,12 +60,14 @@ func NewTester(server content.BasicServer, t *testing.T) *Tester {
 func (t *Tester) All() {
 	log.Print("Assert extract is missing")
 	t.NotExist("")
+	t.ExtractLanguages(nil)
 
 	log.Println("Assert extract list is empty")
 	t.ExtractList(nil)
 
 	log.Print("New extract")
 	t.NewExtract(Author, Extract)
+	t.ExtractLanguages([]language.Code{language.English.Code})
 	id := Extract.Id
 
 	log.Println("Test new extract failures")
@@ -102,6 +105,7 @@ func (t *Tester) All() {
 		content.Audio: []*content.Flavor{secondFlavor},
 	}
 	t.Get(Extract.Id, Extract)
+	t.ExtractLanguages([]language.Code{language.English.Code, german})
 
 	log.Print("Assert new flavor fails")
 	t.NewFlavorFails(Author, &content.Flavor{ExtractId: Extract.Id, Language: language.English.Code})
@@ -307,6 +311,24 @@ func (t *Tester) ExtractList(expected []*content.Extract) {
 		other := list[i]
 		if e.UrlSlug != other.UrlSlug || e.Type != other.Type || e.Id != other.Id {
 			t.Errorf("Id, type and slug should coincide: %v != %v", e, other)
+		}
+	}
+}
+
+func (t *Tester) ExtractLanguages(expected []language.Code) {
+	list, err := t.basic.ExtractLanguages()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(expected) != len(list) {
+		t.Fatalf("Expected list of length %d but got %d.", len(expected), len(list))
+	}
+	sort.Sort(language.CodeSlice(expected))
+	sort.Sort(language.CodeSlice(list))
+	for i, e := range expected {
+		other := list[i]
+		if e != other {
+			t.Errorf("Languages should coincide: %v != %v", e, other)
 		}
 	}
 }
