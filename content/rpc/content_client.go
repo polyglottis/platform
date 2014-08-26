@@ -84,6 +84,11 @@ func (c *Client) GetExtractId(slug string) (content.ExtractId, error) {
 	return id, nil
 }
 
+func (c *Client) ExtractsMatching(q *content.Query) (list []content.ExtractId, err error) {
+	err = c.rpc.Call("ContentServer.ExtractsMatching", q, &list)
+	return
+}
+
 func (c *Client) UpdateExtract(author user.Name, e *content.Extract) error {
 	return c.rpc.Call("ContentServer.UpdateExtract", &ExtractRequest{
 		Author:  author,

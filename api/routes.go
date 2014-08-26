@@ -31,6 +31,7 @@ func (s *Server) RegisterServices(r *mux.Router) {
 	r.HandleFunc("/extract/by-id/{id}", errorHandler(s.ExtractById)).Methods("GET")
 	r.HandleFunc("/extract/list", errorHandler(s.ExtractList)).Methods("GET")
 	r.HandleFunc("/extract/languages", errorHandler(s.ExtractLanguages)).Methods("GET")
+	r.HandleFunc("/extract/search", errorHandler(s.ExtractSearch)).Methods("GET")
 }
 
 func errorHandler(f func(*http.Request) ([]byte, error)) func(http.ResponseWriter, *http.Request) {

@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"testing"
 
@@ -191,6 +192,19 @@ func (s *server) InsertOrUpdateUnit(author user.Name, u *content.Unit) error {
 		}
 	}
 	return content.ErrNotFound
+}
+
+func TestClientImplementsInterface(t *testing.T) {
+	client, err := NewClient(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cType := reflect.TypeOf(client)
+	typeOfServer := reflect.TypeOf((*content.Server)(nil)).Elem()
+	if !cType.Implements(typeOfServer) {
+		t.Fatal("RPC client does not implement content.Server")
+	}
 }
 
 func TestServerAndClient(t *testing.T) {
