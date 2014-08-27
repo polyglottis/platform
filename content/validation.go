@@ -2,6 +2,7 @@ package content
 
 import (
 	"regexp"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/polyglottis/platform/i18n"
@@ -32,6 +33,15 @@ func ValidSlug(slug string) (bool, i18n.Key) {
 		return false, "Only unaccented letters, numbers and underscores are allowed."
 	}
 	return true, ""
+}
+
+var space = regexp.MustCompile(`\s+`)
+
+// NormalizeSlug attempts to create a valid slug based on the seed.
+// There is no guarantee that the result is a valid slug.
+func NormalizeSlug(seed string) string {
+	seed = strings.TrimSpace(seed)
+	return space.ReplaceAllString(seed, "_")
 }
 
 func ValidLanguageComment(comment string) (bool, i18n.Key) {

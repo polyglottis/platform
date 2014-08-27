@@ -20,7 +20,7 @@ type newExtractArgs struct {
 }
 
 func (a *newExtractArgs) CleanUp() {
-	a.Slug = strings.TrimSpace(a.Slug)
+	a.Slug = content.NormalizeSlug(a.Slug)
 	a.Title = strings.TrimSpace(a.Title)
 	a.Summary = strings.TrimSpace(a.Summary)
 	a.Text = strings.TrimSpace(a.Text)
@@ -40,6 +40,9 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 		return nil, err
 	}
 	args.CleanUp()
+
+	defaults.Set("ExtractType", args.ExtractType)
+	defaults.Set("Language", args.Language)
 
 	if valid, msg := content.ValidSlug(args.Slug); valid {
 		_, err = w.Content.GetExtractId(args.Slug)
@@ -103,7 +106,7 @@ func (w *Worker) NewExtract(context *frontend.Context, session *Session) ([]byte
 	}
 
 	session.ClearDefaults()
-	return nil, redirectToOther("/extract/" + args.Slug)
+	return nil, redirectToOther("/extract/" + args.Slug + "/" + string(langCode))
 }
 
 var blockRegexp = regexp.MustCompile(`\s*\n\s*\n\s*`)

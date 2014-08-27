@@ -57,5 +57,5 @@ func (w *Worker) SignOut(context *frontend.Context, session *Session) ([]byte, e
 		return nil, err
 	}
 
-	return nil, redirectToOther("/")
+	return nil, redirectToOther("/user/signin")
 }

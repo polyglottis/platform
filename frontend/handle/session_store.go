@@ -65,6 +65,8 @@ func init() {
 		keys[2*i+1] = kp.EncryptKey
 	}
 	sessionStore = sessions.NewCookieStore(keys...)
+	sessionStore.Options.Path = "/"
+	sessionStore.Options.MaxAge = 86400 * 7 // 1 week
 }
 
 type keyPair struct {

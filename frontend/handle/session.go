@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gorilla/sessions"
 
@@ -85,11 +86,19 @@ func (s *Session) ReadFlashErrors() frontend.ErrorMap {
 // SaveDefaults saves the values as default for the current form.
 func (s *Session) SaveDefaults(values url.Values) {
 	s.defaults.Options = &sessions.Options{
-		Path:   s.r.URL.String(),
+		Path:   s.path(),
 		MaxAge: 3600,
 	}
 	s.defaults.Values["def"] = values
 	s.defaults.Save(s.r, s.w)
+}
+
+func (s *Session) path() string {
+	path := s.r.URL.String()
+	if pos := strings.Index(path, "?"); pos != -1 {
+		path = path[:pos]
+	}
+	return path
 }
 
 // SaveDefault is a shorthand for saving a single default key-value pair.
@@ -113,8 +122,8 @@ func (s *Session) GetDefaults() url.Values {
 // It is typically called when a post request was successful.
 func (s *Session) ClearDefaults() {
 	s.defaults.Options = &sessions.Options{
-		Path:   s.r.URL.String(),
-		MaxAge: 0,
+		Path:   s.path(),
+		MaxAge: -1, // delete immediately
 	}
 	s.defaults.Save(s.r, s.w)
 }

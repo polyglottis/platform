@@ -101,8 +101,14 @@ func (w *Worker) NewFlavorPOST(context *frontend.Context, session *Session) ([]b
 	}
 
 	session.ClearDefaults()
-	context.Query.Set("a", args.Language)
-	context.Query.Set("at", strconv.Itoa(int(f.Id)))
+	if context.Query.Get("b") == "" {
+		context.Query.Set("b", args.Language)
+		context.Query.Set("bt", strconv.Itoa(int(f.Id)))
+		context.Query.Set("focus", "b")
+	} else {
+		context.Query.Set("a", args.Language)
+		context.Query.Set("at", strconv.Itoa(int(f.Id)))
+	}
 	return nil, redirectToOther("/extract/edit/text/" + e.UrlSlug + "?" + context.Query.Encode())
 }
 
