@@ -3,12 +3,15 @@
 	"LanguageDB": "language.db",
 	"UserDB": "user.db",
 	
+	"Host": "http://polyglottis.org",
 	"HttpServer": ":8080",
 	"TemplateRoot": "frontend_server",
+	
 	"SessionKeyPath": "session_keys.txt",
 	"EmailConfigPath": "email_user.json",
 	"StaticDir": "../../../../web",
 	"AngularLocal": true,
+	"SitemapPath": "sitemaps",
 
 	"Frontend": ":18658",
 	"Content":  ":18982",

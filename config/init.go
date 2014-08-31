@@ -53,12 +53,16 @@ type Config struct {
 	UserDB     string // path to user database
 
 	// Web
-	HttpServer      string // main http server
-	TemplateRoot    string // path to templates files
+	Host         string // host serving the platform
+	HttpServer   string // main http server
+	TemplateRoot string // path to templates files
+
+	// Local paths
 	SessionKeyPath  string // path to session keys file (the file will be automatically created if not present)
 	EmailConfigPath string // path to email (smtp) server configuration file (this file must contain a json-encoded github.com/polyglottis/email.User)
 	StaticDir       string // optional: if present, the server also serves static files from there
 	AngularLocal    bool   // if true, angular is fetched from static server instead of CDN.
+	SitemapPath     string // path to current sitemaps (sitemaps will be automatically created)
 
 	// Optional, only for distributed version over rpc:
 	Frontend   string // frontend server
